@@ -1,0 +1,57 @@
+﻿@page "/movies"
+@inject IMovieService MovieService
+@attribute [StreamRendering(true)]
+
+
+<PageTitle>Movie List</PageTitle>
+<style>
+    table {
+        border-collapse: separate;
+        border-spacing: 20px 0px;
+    }
+</style>
+
+<h1>Movie List</h1>
+
+@if(movies == null)
+{
+    <span>Loading...</span>
+}
+else if(movies.Count == 0)
+{
+    <span>No movies found.</span>
+}
+else
+{
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Release year</th>
+            <th>Genre</th>
+            <th>Director</th>
+        </tr>
+        @foreach (var movie in movies)
+        {
+            <tr>
+                <td>@movie.Name</td>
+                <td>@movie.ReleaseYear</td>
+                <td>@movie.Genre</td>
+                <td>@movie.Director</td>
+                <td><DeleteMovieButton Id="@movie.Id" /></td>
+            </tr>
+        }
+    </table>
+}
+<CreateMovieButton />
+
+
+@code {
+    private List<Movie> movies = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        movies = await MovieService.GetAllMovies();
+    }
+
+    
+}

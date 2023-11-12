@@ -1,0 +1,43 @@
+﻿@page "/edit-movie"
+@page "/edit-movie/{id}"
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@inject UserAccessor UserAccessor
+
+<h1>Edit Movie</h1>
+
+<EditForm Model="movie" OnSubmit="HandleSubmit" FormName="editMovie">
+    <div>
+        <label>Name</label>
+        <InputText @bind-Value="movie.Name">@movie.Name</InputText>
+    </div>
+    <div>
+        <label>Director</label>
+        <InputText @bind-Value="movie.Director">@movie.Director</InputText>
+    </div>
+    <div>
+        <label>Genre</label>
+        <InputText @bind-Value="movie.Genre">@movie.Genre</InputText>
+    </div>
+    <div>
+        <label>Release Year</label>
+        <InputNumber @bind-Value="movie.ReleaseYear">@movie.ReleaseYear</InputNumber>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+    @code {
+    private ApplicationUser _user = default!;
+    [Parameter]
+    public string? Id { get; set; }
+    [SupplyParameterFromForm]
+    Movie movie { get; set; } = new Movie { Name = string.Empty, Director = string.Empty, Genre = string.Empty, ReleaseYear = DateTime.Now.Year, UserId = string.Empty};
+
+    async Task HandleSubmit()
+    {
+        _user = await UserAccessor.GetRequiredUserAsync();
+        movie.UserId = _user.Id;
+        await MovieService.AddMovie(movie);
+        NavigationManager.NavigateTo("/movies");
+    }
+}

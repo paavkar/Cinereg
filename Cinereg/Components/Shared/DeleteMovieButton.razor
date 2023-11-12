@@ -1,0 +1,16 @@
+﻿@inject NavigationManager NavigationManager
+@inject IMovieService MovieService
+@attribute [RenderModeInteractiveServer]
+
+<button @onclick="DeleteMovie" class="btn btn-primary">Delete the movie</button>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    async Task DeleteMovie()
+    {
+        await MovieService.DeleteMovie(Id);
+        NavigationManager.NavigateTo("/movies");
+    }
+}
