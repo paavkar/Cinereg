@@ -13,5 +13,8 @@ namespace Cinereg.Entities
         public required string Genre { get; set; }
         public required string Director { get; set; }
         public required string UserId { get; set; }
+        public int WatchedYear { get; set; }
+        public string ViewingForm { get; set; }
+        public double Review { get; set; }
     }
 }

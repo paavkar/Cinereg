@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cinereg.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231112100833_Initial")]
+    [Migration("20231112171034_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -93,6 +93,7 @@ namespace Cinereg.Migrations
             modelBuilder.Entity("Cinereg.Entities.Movie", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Director")
@@ -113,6 +114,13 @@ namespace Cinereg.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ViewingForm")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WatchedYear")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
