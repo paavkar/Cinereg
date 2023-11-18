@@ -19,7 +19,7 @@
 }
 else if(movies.Count == 0)
 {
-    <span>No movies found.</span>
+    <p><span>No movies found.</span></p>
 }
 else
 {
@@ -27,16 +27,22 @@ else
         <tr>
             <th>Name</th>
             <th>Release year</th>
+            <th>Watched year</th>
+            <th>Viewing format</th>
             <th>Genre</th>
             <th>Director</th>
+            <th>Did I enjoy/like it?</th>
         </tr>
         @foreach (var movie in movies)
         {
             <tr>
                 <td>@movie.Name</td>
                 <td>@movie.ReleaseYear</td>
+                <td>@movie.WatchedYear</td>
+                <td>@movie.ViewingForm</td>
                 <td>@movie.Genre</td>
                 <td>@movie.Director</td>
+                <td>@movie.Review</td>
                 <td><DeleteMovieButton Id="@movie.Id" /></td>
             </tr>
         }
@@ -52,6 +58,4 @@ else
     {
         movies = await MovieService.GetAllMovies();
     }
-
-    
 }

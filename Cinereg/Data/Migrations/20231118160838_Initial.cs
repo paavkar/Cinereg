@@ -21,6 +21,7 @@ namespace Cinereg.Migrations
                     Director = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WatchedYear = table.Column<int>(type: "int", nullable: false),
                     ViewingForm = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Review = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>

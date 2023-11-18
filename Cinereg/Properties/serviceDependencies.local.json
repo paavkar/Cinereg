@@ -3,6 +3,13 @@
     "mssql1": {
       "type": "mssql.local",
       "connectionId": "ConnectionStrings:DefaultConnection"
+    },
+    "mssql2": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ServiceLinker/locations/northeurope/connectors/ConnectionStringsAzureDatabaseConnection_2C73C31208",
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/paavkar/databases/DevBase",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:AzureDatabaseConnectionString"
     }
   }
 }

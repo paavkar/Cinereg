@@ -23,6 +23,21 @@
         <label>Release Year</label>
         <InputNumber @bind-Value="movie.ReleaseYear">@movie.ReleaseYear</InputNumber>
     </div>
+    <div>
+        <label>Watched Year</label>
+        <InputNumber @bind-Value="movie.WatchedYear">@movie.WatchedYear</InputNumber>
+    </div>
+    <div>
+        <label>Viewing format</label>
+        <InputText @bind-Value="movie.ViewingForm">@movie.ViewingForm</InputText>
+    </div>
+    <div>
+        <label>Did you enjoy/like the film?</label>
+        <InputSelect @bind-Value="movie.Review">
+            <option selected value="Yes">Yes</option>
+            <option value="No">No</option>
+        </InputSelect>
+    </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </EditForm>
 
@@ -31,7 +46,8 @@
     [Parameter]
     public string? Id { get; set; }
     [SupplyParameterFromForm]
-    Movie movie { get; set; } = new Movie { Name = string.Empty, Director = string.Empty, Genre = string.Empty, ReleaseYear = DateTime.Now.Year, UserId = string.Empty};
+    Movie movie { get; set; } = new Movie { Name = string.Empty, Director = string.Empty, Genre = string.Empty, ReleaseYear = DateTime.Now.Year, WatchedYear = DateTime.Now.Year,
+        ViewingForm = string.Empty, Review = string.Empty, UserId = string.Empty};
 
     async Task HandleSubmit()
     {
