@@ -25,15 +25,8 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 
 var connectionString = "";
 
-if (builder.Environment.IsDevelopment())
-{
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-}
-else
-{
-    connectionString = builder.Configuration.GetConnectionString("AzureDatabaseConnectionString") ?? throw new InvalidOperationException("Connection string 'AzureDatabaseConnectionString' not found.");
-}
+connectionString = builder.Configuration.GetConnectionString("AzureDatabaseConnectionString") ?? throw new InvalidOperationException("Connection string 'AzureDatabaseConnectionString' not found.");
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
