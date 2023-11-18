@@ -23,12 +23,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAu
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
 
-var connectionString = "";
-
-connectionString = builder.Configuration.GetConnectionString("AzureDatabaseConnectionString") ?? throw new InvalidOperationException("Connection string 'AzureDatabaseConnectionString' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
