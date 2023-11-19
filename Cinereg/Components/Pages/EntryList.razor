@@ -2,14 +2,7 @@
 @inject IMovieService MovieService
 @attribute [StreamRendering(true)]
 
-
-<PageTitle>Movie List</PageTitle>
-<style>
-    table {
-        border-collapse: separate;
-        border-spacing: 20px 0px;
-    }
-</style>
+<PageTitle>Movies</PageTitle>
 
 <h1>Movie List</h1>
 
@@ -23,33 +16,36 @@ else if(movies.Count == 0)
 }
 else
 {
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Release year</th>
-            <th>Watched year</th>
-            <th>Viewing format</th>
-            <th>Genre</th>
-            <th>Director</th>
-            <th>Did I enjoy/like it?</th>
-        </tr>
-        @foreach (var movie in movies)
-        {
+    <table class="table">
+        <thead>
             <tr>
-                <td>@movie.Name</td>
-                <td>@movie.ReleaseYear</td>
-                <td>@movie.WatchedYear</td>
-                <td>@movie.ViewingForm</td>
-                <td>@movie.Genre</td>
-                <td>@movie.Director</td>
-                <td>@movie.Review</td>
-                <td><DeleteMovieButton Id="@movie.Id" /></td>
+                <th>Name</th>
+                <th>Release year</th>
+                <th>Watched year</th>
+                <th>Viewing format</th>
+                <th>Genre</th>
+                <th>Director</th>
+                <th>Did I enjoy/like it?</th>
             </tr>
-        }
+        </thead>
+        <tbody>
+            @foreach (var movie in movies)
+            {
+                <tr>
+                    <td>@movie.Name</td>
+                    <td>@movie.ReleaseYear</td>
+                    <td>@movie.WatchedYear</td>
+                    <td>@movie.ViewingForm</td>
+                    <td>@movie.Genre</td>
+                    <td>@movie.Director</td>
+                    <td>@movie.Review</td>
+                    <td><DeleteMovieButton Id="@movie.Id" /></td>
+                </tr>
+            }
+        </tbody>
     </table>
 }
 <CreateMovieButton />
-
 
 @code {
     private List<Movie> movies = new();

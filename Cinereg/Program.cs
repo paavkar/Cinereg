@@ -36,6 +36,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
 
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
 
 var app = builder.Build();
 

@@ -1,5 +1,12 @@
 ﻿@page "/weather"
-@attribute [StreamRendering(true)]
+@inject IWeatherService WeatherService
+@rendermode InteractiveServer
+
+<style>
+    h2 {
+        text-align: center;
+    }
+</style>
 
 <PageTitle>Weather</PageTitle>
 
@@ -7,29 +14,37 @@
 
 <p>This component demonstrates showing data.</p>
 
-@if (forecasts == null)
+<div>
+    <label>Location</label>
+    <InputText @bind-Value="location">@location</InputText>
+    <button @onclick="RetrieveForecast" class="btn btn-primary">Search</button>
+</div>
+
+@if (weatherForecast == null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Give a location</em></p>
 }
 else
 {
+    <h2>Weather forecast for @location</h2>
     <table class="table">
         <thead>
             <tr>
                 <th>Date</th>
                 <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
                 <th>Summary</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var forecast in weatherForecast.list)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@forecast.dtDateTime</td>
+                    <td>@forecast.main.temp</td>
+                    @foreach (var weather in forecast.weather)
+                    {
+                        <td>@weather.main</td>
+                    }
                 </tr>
             }
         </tbody>
@@ -37,28 +52,14 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private string? location;
 
-    protected override async Task OnInitializedAsync()
+    private WeatherForecastDTO? weatherForecast;
+
+    async Task RetrieveForecast()
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
-
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = startDate.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = summaries[Random.Shared.Next(summaries.Length)]
-        }).ToArray();
-    }
-
-    private class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        WeatherForecastDTO weatherForecast = new();
+        weatherForecast = await WeatherService.GetWeatherForecast(location);
+        this.weatherForecast = weatherForecast;
     }
 }
