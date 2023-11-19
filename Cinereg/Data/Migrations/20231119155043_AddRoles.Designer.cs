@@ -4,6 +4,7 @@ using Cinereg.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cinereg.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231119155043_AddRoles")]
+    partial class AddRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,15 +160,15 @@ namespace Cinereg.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d67736b3-f04f-415a-8c47-b74f02b1a96b",
-                            ConcurrencyStamp = "e79c1690-2abe-44cd-a88e-d538fae0e31b",
+                            Id = "638c9ad1-ef81-4476-a1b1-9a77bdff8e4b",
+                            ConcurrencyStamp = "53a1fb4c-de68-4c02-97c1-7bfd7d829ede",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "8d2f0e19-4604-4383-afae-def4ce5ae204",
-                            ConcurrencyStamp = "9cdfe031-f0a2-4477-984e-0330f611f1d6",
+                            Id = "e2985af6-1797-446f-b5d8-1e237c0a956c",
+                            ConcurrencyStamp = "bc2ab4e6-09fb-45dd-b868-1b16e51efb67",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });

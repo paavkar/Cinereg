@@ -122,6 +122,7 @@
 
         if (result.Succeeded)
         {
+            await UserManager.AddToRoleAsync(user, "User");
             Logger.LogInformation("User created a new account with password.");
 
             var userId = await UserManager.GetUserIdAsync(user);

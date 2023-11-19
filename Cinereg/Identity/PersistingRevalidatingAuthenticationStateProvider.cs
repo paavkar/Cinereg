@@ -85,6 +85,7 @@ namespace Cinereg.Identity
             {
                 var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
                 var email = principal.FindFirst(_options.ClaimsIdentity.EmailClaimType)?.Value;
+                var role = principal.FindFirst(_options.ClaimsIdentity.RoleClaimType)?.Value;
 
                 if (userId != null && email != null)
                 {
@@ -92,6 +93,7 @@ namespace Cinereg.Identity
                     {
                         UserId = userId,
                         Email = email,
+                        Role = role,
                     });
                 }
             }
