@@ -1,5 +1,6 @@
 ﻿@page "/movies"
 @inject IMovieService MovieService
+@inject UserAccessor UserAccessor
 @attribute [StreamRendering(true)]
 
 <PageTitle>Movies</PageTitle>
@@ -48,10 +49,12 @@ else
 <CreateMovieButton />
 
 @code {
+    private ApplicationUser _user = default!;
     private List<Movie> movies = new();
 
     protected override async Task OnInitializedAsync()
     {
-        movies = await MovieService.GetAllMovies();
+        _user = await UserAccessor.GetRequiredUserAsync();
+        movies = await MovieService.GetAllMovies(_user.Id);
     }
 }

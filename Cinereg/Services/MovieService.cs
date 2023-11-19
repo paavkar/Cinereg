@@ -33,9 +33,9 @@ namespace Cinereg.Services
             return false;
         }
 
-        public async Task<List<Movie>> GetAllMovies()
+        public async Task<List<Movie>> GetAllMovies(string UserId)
         {
-            var movies = await _context.Movies.ToListAsync();
+            var movies = await _context.Movies.Where(m => m.UserId == UserId).ToListAsync();
             return movies;
         }
     }
