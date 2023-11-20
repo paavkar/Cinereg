@@ -4,8 +4,10 @@ namespace Cinereg.Services
 {
     public interface IMovieService
     {
-        Task<List<Movie>> GetAllMovies(string UserId);
+        Task<List<Movie>> GetAllMovies(string userId);
+        Task<Movie> GetMovieById(string id);
         Task<Movie> AddMovie(Movie movie);
-        Task<bool> DeleteMovie(string Id);
+        Task<Movie> UpdateMovie(string id, Movie movie);
+        Task<bool> DeleteMovie(string id);
     }
 }

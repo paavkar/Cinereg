@@ -4,28 +4,36 @@
 @inject NavigationManager NavigationManager
 @inject UserAccessor UserAccessor
 
-<h1>Edit Movie</h1>
+@if(Id == null)
+{
+    <h1>Add a Movie</h1>
+}
+else
+{
+    <h1>Edit @movie.Name</h1>
+}
 
-<EditForm Model="movie" OnSubmit="HandleSubmit" FormName="editMovie">
+
+<EditForm Model="@movie" OnSubmit="HandleSubmit" FormName="editMovie">
     <div>
-        <label>Name</label>
-        <InputText @bind-Value="movie.Name">@movie.Name</InputText>
+        <label>Title</label>
+        <InputText @bind-Value="@movie.Name">@movie.Name</InputText>
     </div>
     <div>
         <label>Director</label>
-        <InputText @bind-Value="movie.Director">@movie.Director</InputText>
+        <InputText @bind-Value="@movie.Director">@movie.Director</InputText>
     </div>
     <div>
         <label>Genre</label>
-        <InputText @bind-Value="movie.Genre">@movie.Genre</InputText>
+        <InputText @bind-Value="@movie.Genre">@movie.Genre</InputText>
     </div>
     <div>
         <label>Release Year</label>
-        <InputNumber @bind-Value="movie.ReleaseYear">@movie.ReleaseYear</InputNumber>
+        <InputNumber @bind-Value="@movie.ReleaseYear">@movie.ReleaseYear</InputNumber>
     </div>
     <div>
         <label>Watched Year</label>
-        <InputNumber @bind-Value="movie.WatchedYear">@movie.WatchedYear</InputNumber>
+        <InputNumber @bind-Value="@movie.WatchedYear">@movie.WatchedYear</InputNumber>
     </div>
     <div>
         <label>Viewing format</label>
@@ -33,27 +41,56 @@
     </div>
     <div>
         <label>Did you enjoy/like the film?</label>
-        <InputSelect @bind-Value="movie.Review">
-            <option selected value="Yes">Yes</option>
-            <option value="No">No</option>
+        <InputSelect @bind-Value="@movie.Review">
+            @if (Id == null)
+            {
+                <option selected value="Yes">Yes</option>
+                <option value="No">No</option>
+            }
+            else
+            {
+                <option selected value="@movie.Review">@movie.Review</option>
+                <option value="@(movie.Review == "Yes" ? "No" : "Yes")">@(movie.Review == "Yes" ? "No" : "Yes")</option>
+            }
         </InputSelect>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </EditForm>
 
 @code {
-    private ApplicationUser _user = default!;
     [Parameter]
     public string? Id { get; set; }
+    private ApplicationUser _user = default!;
     [SupplyParameterFromForm]
-    Movie movie { get; set; } = new Movie { Name = string.Empty, Director = string.Empty, Genre = string.Empty, ReleaseYear = DateTime.Now.Year, WatchedYear = DateTime.Now.Year,
-        ViewingForm = string.Empty, Review = string.Empty, UserId = string.Empty};
+    Movie movie { get; set; } = new Movie { Name = string.Empty, 
+                                            Director = string.Empty, 
+                                            Genre = string.Empty, 
+                                            ReleaseYear = DateTime.Now.Year, 
+                                            WatchedYear = DateTime.Now.Year,
+                                            ViewingForm = string.Empty, 
+                                            Review = string.Empty, 
+                                            UserId = string.Empty };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null && movie.UserId == string.Empty)
+        {
+            movie = await MovieService.GetMovieById(Id);
+        }
+    }
 
     async Task HandleSubmit()
     {
-        _user = await UserAccessor.GetRequiredUserAsync();
-        movie.UserId = _user.Id;
-        await MovieService.AddMovie(movie);
-        NavigationManager.NavigateTo("/movies");
+        if (Id == null)
+        {
+            _user = await UserAccessor.GetRequiredUserAsync();
+            movie.UserId = _user.Id;
+            await MovieService.AddMovie(movie);
+            NavigationManager.NavigateTo("/movies");
+        }
+        else
+        {
+            await MovieService.UpdateMovie(Id, movie);
+        }
     }
 }

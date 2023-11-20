@@ -33,10 +33,33 @@ namespace Cinereg.Services
             return false;
         }
 
-        public async Task<List<Movie>> GetAllMovies(string UserId)
+        public async Task<List<Movie>> GetAllMovies(string userId)
         {
-            var movies = await _context.Movies.Where(m => m.UserId == UserId).ToListAsync();
+            var movies = await _context.Movies.Where(m => m.UserId == userId).ToListAsync();
             return movies;
+        }
+
+        public async Task<Movie> GetMovieById(string id)
+        {
+            return await _context.Movies.FindAsync(id);
+        }
+
+        public async Task<Movie> UpdateMovie(string id, Movie movie)
+        {
+            var dbMovie = await _context.Movies.FindAsync(id);
+            if (dbMovie != null)
+            {
+                dbMovie.Name = movie.Name;
+                dbMovie.ReleaseYear = movie.ReleaseYear;
+                dbMovie.Genre = movie.Genre;
+                dbMovie.Director = movie.Director;
+                dbMovie.WatchedYear = movie.WatchedYear;
+                dbMovie.ViewingForm = movie.ViewingForm;
+                dbMovie.Review = movie.Review;
+                await _context.SaveChangesAsync();
+                return dbMovie;
+            }
+            throw new Exception("Movie not found.");
         }
     }
 }

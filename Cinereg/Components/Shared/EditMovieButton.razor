@@ -1,0 +1,14 @@
+﻿@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<button @onclick="EditMovie" class="btn btn-primary">Edit movie</button>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    void EditMovie()
+    {
+        NavigationManager.NavigateTo($"/edit-movie/{Id}");
+    }
+}
