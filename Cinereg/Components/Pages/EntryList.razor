@@ -21,7 +21,7 @@ else
 {
     <FluentGrid>
         <FluentGridItem xs="12">
-            <FluentDataGrid Id="moviegrid" Items=@iMovies ResizableColumns="true" Pagination="@pagination" Style="height: 405px; overflow:auto;">
+            <FluentDataGrid Id="moviegrid" Items=@iMovies ResizableColumns="true" Style="height: 405px; overflow:auto;">
                 <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
                 <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
                 <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
@@ -34,7 +34,7 @@ else
                     <DeleteMovieButton Id=@context.Id />
                 </TemplateColumn>
             </FluentDataGrid>
-            <FluentPaginator State="@pagination" />
+            @*<FluentPaginator State="@pagination" />*@
         </FluentGridItem>
 </FluentGrid>
 }
@@ -46,7 +46,8 @@ else
     private IQueryable<Movie>? iMovies;
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
-    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    // Without interactivity, pagination won't work
+    //PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     protected override async Task OnInitializedAsync()
     {
