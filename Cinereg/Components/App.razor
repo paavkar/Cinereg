@@ -14,15 +14,6 @@
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
-    <script>
-        Blazor.start({
-            circuit: {
-                configureSignalR: function (builder) {
-                    builder.withServerTimeout(60000);
-                }
-            }
-        });
-    </script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/js/web-components-v2.5.16.min.js" type="module" async></script>
 </body>
 
