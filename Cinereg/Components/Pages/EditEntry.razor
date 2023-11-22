@@ -1,96 +1,117 @@
 ﻿@page "/edit-movie"
 @page "/edit-movie/{id}"
+
+@rendermode InteractiveServer
+
 @inject IMovieService MovieService
 @inject NavigationManager NavigationManager
-@inject UserAccessor UserAccessor
+@inject SimpleUserAccessor UserAccessor
 
-@if(Id == null)
+@if (Id == null)
 {
-    <h1>Add a Movie</h1>
+    <FluentLabel Typo="Typography.PageTitle">Add a movie</FluentLabel>
 }
 else
 {
-    <h1>Edit @movie.Name</h1>
+    <FluentLabel Typo="Typography.PageTitle">Edit @Movie.Name</FluentLabel>
 }
-
-
-<EditForm Model="@movie" OnSubmit="HandleSubmit" FormName="editMovie">
-    <div>
-        <label>Title</label>
-        <InputText @bind-Value="@movie.Name">@movie.Name</InputText>
-    </div>
-    <div>
-        <label>Director</label>
-        <InputText @bind-Value="@movie.Director">@movie.Director</InputText>
-    </div>
-    <div>
-        <label>Genre</label>
-        <InputText @bind-Value="@movie.Genre">@movie.Genre</InputText>
-    </div>
-    <div>
-        <label>Release Year</label>
-        <InputNumber @bind-Value="@movie.ReleaseYear">@movie.ReleaseYear</InputNumber>
-    </div>
-    <div>
-        <label>Watched Year</label>
-        <InputNumber @bind-Value="@movie.WatchedYear">@movie.WatchedYear</InputNumber>
-    </div>
-    <div>
-        <label>Viewing format</label>
-        <InputText @bind-Value="movie.ViewingForm">@movie.ViewingForm</InputText>
-    </div>
-    <div>
-        <label>Did you enjoy/like the film?</label>
-        <InputSelect @bind-Value="@movie.Review">
-            @if (Id == null)
-            {
-                <option selected value="Yes">Yes</option>
-                <option value="No">No</option>
-            }
-            else
-            {
-                <option selected value="@movie.Review">@movie.Review</option>
-                <option value="@(movie.Review == "Yes" ? "No" : "Yes")">@(movie.Review == "Yes" ? "No" : "Yes")</option>
-            }
-        </InputSelect>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</EditForm>
+<FluentGrid>
+    <FluentGridItem xs="8" sm="4">
+        <EditForm Model="@Movie" OnValidSubmit="Submit" FormName="editMovie">
+            <FluentStack Orientation="Orientation.Vertical">
+                <FluentTextField Label="Title"
+                                 Placeholder="Enter the movie title"
+                                 Required="true"
+                                 Size=30
+                                 @bind-Value="Movie!.Name" />
+                <FluentTextField Label="Genre"
+                                 Placeholder="Enter the movie genre"
+                                 Required="true"
+                                 Size=30
+                                 @bind-Value="Movie!.Genre" />
+                <FluentTextField Label="Director"
+                                 Placeholder="Enter the movie director"
+                                 Required="true"
+                                 Size=30
+                                 @bind-Value="Movie!.Director" />
+                <FluentNumberField Label="Release year"
+                                   Placeholder="Enter the movie release year"
+                                   Required="true"
+                                   Size=26
+                                   @bind-Value="Movie!.ReleaseYear" />
+                <FluentNumberField Label="Watched year"
+                                   Placeholder="Enter the year you watched the movie"
+                                   Required="true"
+                                   Size=26
+                                   @bind-Value="Movie!.WatchedYear" />
+                <FluentTextField Label="Viewing format"
+                                 Placeholder="Enter the movie viewing format"
+                                 Required="true"
+                                 Size=30
+                                 @bind-Value="Movie!.ViewingForm" />
+                <FluentSelect Items=@reviewOptions
+                              OptionText="@(i => i.Text)"
+                              OptionValue="@(i => i.Value)"
+                              OptionSelected="@(i => i.Selected)"
+                              Label="Did you enjoy/like the movie?"
+                              @bind-Value="Movie!.Review" />
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
+            </FluentStack>
+        </EditForm>
+    </FluentGridItem>
+</FluentGrid>
 
 @code {
+    private bool Loading = false;
+
+    static List<Option<string>> reviewOptions = new()
+    {
+        { new Option<string> { Value = "Yes", Text = "Yes", Selected = true } },
+        { new Option<string> { Value = "No", Text = "No",  } },
+    };
+
     [Parameter]
     public string? Id { get; set; }
-    private ApplicationUser _user = default!;
+
+    private ApplicationUser user { get; set; } = default!;
+
     [SupplyParameterFromForm]
-    Movie movie { get; set; } = new Movie { Name = string.Empty, 
-                                            Director = string.Empty, 
-                                            Genre = string.Empty, 
-                                            ReleaseYear = DateTime.Now.Year, 
-                                            WatchedYear = DateTime.Now.Year,
-                                            ViewingForm = string.Empty, 
-                                            Review = string.Empty, 
-                                            UserId = string.Empty };
+    private Movie Movie { get; set; } = new();
+
+    protected override void OnInitialized() => Movie ??= new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Id != null && movie.UserId == string.Empty)
+        if (Id != null)
         {
-            movie = await MovieService.GetMovieById(Id);
+            Movie = await MovieService.GetMovieById(Id);
+            reviewOptions = new()
+            {
+                { new Option<string> { Value = Movie.Review, Text = Movie.Review, Selected = true } },
+                { new Option<string> { Value = Movie.Review == "Yes" ? "No" : "Yes", Text = Movie.Review == "Yes" ? "No" : "Yes",  } },
+            };
         }
     }
 
-    async Task HandleSubmit()
+    async Task Submit()
     {
+        Loading = true;
         if (Id == null)
         {
-            _user = await UserAccessor.GetRequiredUserAsync();
-            movie.UserId = _user.Id;
-            await MovieService.AddMovie(movie);
+            Movie.UserId = user.Id;
+            await MovieService.AddMovie(Movie);
+            Loading = false;
             NavigationManager.NavigateTo("/movies");
         }
         else
         {
-            await MovieService.UpdateMovie(Id, movie);
+            await MovieService.UpdateMovie(Id, Movie);
+            Loading = false;
         }
     }
 }

@@ -2,7 +2,7 @@
 @inject IMovieService MovieService
 @rendermode InteractiveServer
 
-<button @onclick="DeleteMovie" class="btn btn-primary">Delete the movie</button>
+<FluentButton IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="DeleteMovie" />
 
 @code {
     [Parameter]
@@ -10,6 +10,7 @@
 
     async Task DeleteMovie()
     {
+        System.Console.WriteLine(Id);
         await MovieService.DeleteMovie(Id);
         NavigationManager.NavigateTo("/movies");
     }

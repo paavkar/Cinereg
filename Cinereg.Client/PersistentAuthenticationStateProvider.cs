@@ -4,16 +4,18 @@ using System.Security.Claims;
 
 namespace Cinereg.Client
 {
-    public class PersistentAuthenticationStateProvider(PersistentComponentState persistentState) : AuthenticationStateProvider
+    internal class PersistentAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private static readonly Task<AuthenticationState> _unauthenticatedTask =
+        private static readonly Task<AuthenticationState> defaultUnauthenticatedTask =
             Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        private readonly Task<AuthenticationState> authenticationStateTask = defaultUnauthenticatedTask;
+
+        public PersistentAuthenticationStateProvider(PersistentComponentState state)
         {
-            if (!persistentState.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
+            if (!state.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
             {
-                return _unauthenticatedTask;
+                return;
             }
 
             Claim[] claims = [
@@ -22,10 +24,12 @@ namespace Cinereg.Client
                 new Claim(ClaimTypes.Email, userInfo.Email),
                 new Claim(ClaimTypes.Role, userInfo.Role)];
 
-            return Task.FromResult(
+            authenticationStateTask = Task.FromResult(
                 new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims,
                     authenticationType: nameof(PersistentAuthenticationStateProvider)))));
         }
-    }
 
+        public override Task<AuthenticationState> GetAuthenticationStateAsync() => authenticationStateTask;
+    }
 }
+

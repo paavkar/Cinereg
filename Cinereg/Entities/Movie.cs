@@ -7,14 +7,23 @@ namespace Cinereg.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Required]
         public string Id { get; set; }
-        public required string Name { get; set; }
-        public required int ReleaseYear { get; set; }
-        public required string Genre { get; set; }
-        public required string Director { get; set; }
-        public required string UserId { get; set; }
-        public required int WatchedYear { get; set; }
-        public required string ViewingForm { get; set; }
-        public required string Review { get; set; }
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public int ReleaseYear { get; set; } = DateTime.Now.Year;
+        [Required]
+        public string Genre { get; set; }
+        [Required]
+        public string Director { get; set; }
+        [Required]
+        public string UserId { get; set; }
+        [Required]
+        public int WatchedYear { get; set; } = DateTime.Now.Year;
+        [Required]
+        public string ViewingForm { get; set; }
+        [Required]
+        public string Review { get; set; }
     }
 }

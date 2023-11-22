@@ -1,5 +1,7 @@
 ﻿@page "/weather"
+
 @inject IWeatherService WeatherService
+
 @rendermode InteractiveServer
 
 <style>
@@ -10,56 +12,62 @@
 
 <PageTitle>Weather</PageTitle>
 
-<h1>Weather</h1>
+<FluentLabel Typo="Typography.PageTitle">Weather</FluentLabel>
+<FluentLabel Typo="Typography.H2" Alignment="HorizontalAlignment.Center">@Message</FluentLabel>
+<FluentStack Orientation="Orientation.Vertical">
+    <FluentTextField Label="Location"
+                     Placeholder="Search for a location"
+                     Required
+                     @bind-Value="location" />
+    <FluentButton OnClick="RetrieveForecast" Appearance="Appearance.Accent">Search</FluentButton>
+</FluentStack>
 
-<p>This component demonstrates showing data.</p>
 
-<div>
-    <label>Location</label>
-    <InputText @bind-Value="location">@location</InputText>
-    <button @onclick="RetrieveForecast" class="btn btn-primary">Search</button>
-</div>
-
-@if (weatherForecast == null)
+@if (forecasts == null)
 {
-    <p><em>Give a location</em></p>
+    
 }
 else
 {
-    <h2>Weather forecast for @location</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in weatherForecast.list)
-            {
-                <tr>
-                    <td>@forecast.dtDateTime</td>
-                    <td>@forecast.main.temp</td>
-                    @foreach (var weather in forecast.weather)
+    <FluentGrid>
+        <FluentGridItem xs="12">
+            <FluentDataGrid Id="weathergrid" Items=@forecasts ResizableColumns="true" Pagination="@pagination" Style="height: 405px; overflow:auto;">
+                <PropertyColumn Title="Date" Property="@(c => c!.dtDateTime)" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Temp. (C)" Property="@(c => c!.main.temp)" Sortable="true" Align=Align.Center />
+                <TemplateColumn Title="Summary" Align=Align.End>
+                    @foreach (var weather in context!.weather)
                     {
-                        <td>@weather.main</td>
+                        <div>@weather.main</div>
                     }
-                </tr>
-            }
-        </tbody>
-    </table>
+                </TemplateColumn>
+            </FluentDataGrid>
+            <FluentPaginator State="@pagination" />
+        </FluentGridItem>
+</FluentGrid>
 }
 
 @code {
     private string? location;
+    private string Message = "Search for a location";
+
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     private WeatherForecastDTO? weatherForecast;
+    private IQueryable<List>? forecasts;
 
     async Task RetrieveForecast()
     {
         WeatherForecastDTO weatherForecast = new();
         weatherForecast = await WeatherService.GetWeatherForecast(location);
-        this.weatherForecast = weatherForecast;
+        if (weatherForecast.list != null)
+        {
+            this.forecasts = weatherForecast.list.AsQueryable();
+            Message = $"Weather forecast for {location}";
+        }
+        else
+        {
+            Message = "Search for a location";
+            forecasts = null;
+        }
     }
 }

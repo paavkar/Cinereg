@@ -1,9 +1,10 @@
 ﻿@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<button @onclick="CreateMovie" class="btn btn-primary">Add a movie</button>
+<FluentButton OnClick="CreateMovie" Appearance="Appearance.Accent">Add a movie</FluentButton>
 
 @code {
+
     void CreateMovie()
     {
         NavigationManager.NavigateTo("/edit-movie");

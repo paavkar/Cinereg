@@ -1,11 +1,13 @@
 ﻿@page "/movies"
+
 @inject IMovieService MovieService
 @inject UserAccessor UserAccessor
+
 @attribute [StreamRendering(true)]
 
 <PageTitle>Movies</PageTitle>
 
-<h1>Movie List</h1>
+<FluentLabel Typo="Typography.PageTitle">Movie List</FluentLabel>
 
 @if(movies == null)
 {
@@ -13,49 +15,43 @@
 }
 else if(movies.Count == 0)
 {
-    <p><span>No movies found.</span></p>
+    <FluentLabel>No movies found.</FluentLabel>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Release year</th>
-                <th>Watched year</th>
-                <th>Viewing format</th>
-                <th>Genre</th>
-                <th>Director</th>
-                <th>Did I enjoy/like it?</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var movie in movies)
-            {
-                <tr>
-                    <td>@movie.Name</td>
-                    <td>@movie.ReleaseYear</td>
-                    <td>@movie.WatchedYear</td>
-                    <td>@movie.ViewingForm</td>
-                    <td>@movie.Genre</td>
-                    <td>@movie.Director</td>
-                    <td>@movie.Review</td>
-                    <td><EditMovieButton Id="@movie.Id" /></td>
-                    <td><DeleteMovieButton Id="@movie.Id" /></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <FluentGrid>
+        <FluentGridItem xs="12">
+            <FluentDataGrid Id="moviegrid" Items=@iMovies ResizableColumns="true" Pagination="@pagination" Style="height: 405px; overflow:auto;">
+                <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
+                <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
+                <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
+                <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
+                <PropertyColumn Title="Genre" Property="@(c => c!.Genre)" Sortable="true" Align=Align.Center />
+                <PropertyColumn Title="Director" Property="@(c => c!.Director)" Sortable="true" Align=Align.Center />
+                <PropertyColumn Title="Did I enjoy/like it?" Property="@(c => c!.Review)" Sortable="true" Align=Align.Center />
+                <TemplateColumn Title="Actions" Align="@Align.End">
+                    <EditMovieButton Id=@context.Id />
+                    <DeleteMovieButton Id=@context.Id />
+                </TemplateColumn>
+            </FluentDataGrid>
+            <FluentPaginator State="@pagination" />
+        </FluentGridItem>
+</FluentGrid>
 }
 <CreateMovieButton />
 
 @code {
-    private ApplicationUser _user = default!;
+    private ApplicationUser user = default!;
     private List<Movie> movies = new();
+    private IQueryable<Movie>? iMovies;
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     protected override async Task OnInitializedAsync()
     {
-        _user = await UserAccessor.GetRequiredUserAsync();
-        movies = await MovieService.GetAllMovies(_user.Id);
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        movies = await MovieService.GetAllMovies(user.Id);
+        iMovies = movies.AsQueryable();
     }
 }
