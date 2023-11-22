@@ -1,0 +1,25 @@
+﻿@rendermode InteractiveServer
+
+<FluentDataGrid Id="moviegrid" Items=@iMovies ResizableColumns="true" Style="height: 405px; overflow:auto;">
+    <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
+    <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Genre" Property="@(c => c!.Genre)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Director" Property="@(c => c!.Director)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Did I enjoy/like it?" Property="@(c => c!.Review)" Sortable="true" Align=Align.Center />
+    <TemplateColumn Title="Actions" Align="@Align.End">
+        <EditMovieButton Id=@context.Id />
+        <DeleteMovieButton Id=@context.Id />
+    </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination" />
+
+@code {
+    [Parameter]
+    public List<Movie> movies { get; set; }
+    private IQueryable<Movie>? iMovies;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+
+    protected override void OnInitialized() => iMovies = movies.AsQueryable();
+}
