@@ -5,6 +5,18 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
+<style>
+    .btn-primary {
+        color: #fff;
+        background-color: #1b6ec2;
+        border-color: #1861ac;
+        margin-left: 10px;
+        padding: .25rem .5rem;
+        font-size: .875rem;
+        border-radius: .2rem
+    }
+</style>
+
 @if (externalLogins.Length == 0)
 {
     <div>
@@ -25,7 +37,7 @@ else
             <p>
                 @foreach (var provider in externalLogins)
                 {
-                    <FluentButton Style="margin-left: 10px;" Type="ButtonType.Submit" Appearance="Appearance.Accent" name="provider" Value="@provider.Name" Title="@($"Log in using your {provider.DisplayName} account")">@provider.DisplayName</FluentButton>
+                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
                 }
             </p>
         </div>
@@ -41,10 +53,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
-        @foreach (var provider in externalLogins)
-        {
-            System.Console.WriteLine(provider.Name);
-        }
     }
 }
 
