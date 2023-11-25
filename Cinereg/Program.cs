@@ -38,18 +38,23 @@ builder.Services.AddAuthentication(options =>
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
-    .AddGoogle(options =>
-    {
-        IConfigurationSection googleAuthNSection =
-        configuration.GetSection("Authentication:Google");
-        options.ClientId = googleAuthNSection["ClientId"];
-        options.ClientSecret = googleAuthNSection["ClientSecret"];
-    })
-    .AddMicrosoftAccount(microsoftOptions =>
-    {
-        microsoftOptions.ClientId = configuration["Authentication:Microsoft:ClientId"];
-        microsoftOptions.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"];
-    })
+   /*.AddGoogle(options =>
+   {
+       IConfigurationSection googleAuthNSection =
+       configuration.GetSection("Authentication:Google");
+       options.ClientId = googleAuthNSection["ClientId"];
+       options.ClientSecret = googleAuthNSection["ClientSecret"];
+   })
+   .AddMicrosoftAccount(microsoftOptions =>
+   {
+       microsoftOptions.ClientId = configuration["Authentication:Microsoft:ClientId"];
+       microsoftOptions.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"];
+   })
+   .AddGitHub(options =>
+   {
+       options.ClientId = configuration["Authentication:GitHub:ClientId"];
+       options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"];
+   })*/
    .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
