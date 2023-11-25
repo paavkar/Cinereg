@@ -25,7 +25,7 @@ else
             <p>
                 @foreach (var provider in externalLogins)
                 {
-                    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" name="provider" Value="@provider.Name" Title="@($"Log in using your {provider.DisplayName} account")">@provider.DisplayName</FluentButton>
+                    <FluentButton Style="margin-left: 10px;" Type="ButtonType.Submit" Appearance="Appearance.Accent" name="provider" Value="@provider.Name" Title="@($"Log in using your {provider.DisplayName} account")">@provider.DisplayName</FluentButton>
                 }
             </p>
         </div>
@@ -41,6 +41,10 @@ else
     protected override async Task OnInitializedAsync()
     {
         externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
+        @foreach (var provider in externalLogins)
+        {
+            System.Console.WriteLine(provider.Name);
+        }
     }
 }
 

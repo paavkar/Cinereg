@@ -32,8 +32,6 @@ else
     private List<Movie> movies = new();
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
-    // Without interactivity, pagination won't work
-    //PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     protected override async Task OnInitializedAsync()
     {

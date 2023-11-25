@@ -14,19 +14,24 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
+<FluentLabel Typo="Typography.PageTitle">Log in</FluentLabel>
 <FluentGrid>
     <FluentGridItem xs="8" sm="4">
+        <StatusMessage Message="@errorMessage" />
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <DataAnnotationsValidator />
             <h2>Use a local account to log in.</h2>
             <hr />
+            <FluentValidationSummary class="text-danger" role="alert" />
             <FluentStack Orientation="Orientation.Vertical">
                 <FluentTextField Name="Input.Email" @bind-Value="Input.Email" AutoComplete="username" Required="true" Placeholder="name@example.com" Label="Email" Style="width: 100%" />
+                <ValidationMessage For="() => Input.Email" class="text-danger" />
                 <FluentTextField type="password" Name="Input.Password" @bind-Value="Input.Password" AutoComplete="current-password" Required="true" Placeholder="password" Label="Password" Style="width: 100%" />
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" />
-                        Remember me
-                    </label>
+                <ValidationMessage For="() => Input.Password" class="text-danger" />
+                <label class="form-label">
+                    <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" />
+                    Remember me
+                </label>
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading" Style="width: 100%">Log in</FluentButton>
                 <div>
                     <p>
@@ -51,7 +56,7 @@
 
 @code {
     private string? errorMessage;
-
+    
     private bool Loading = false;
 
     [CascadingParameter]
@@ -86,17 +91,20 @@
         }
         else if (result.RequiresTwoFactor)
         {
+            Loading = false;
             RedirectManager.RedirectTo(
                 "Account/LoginWith2fa",
                 new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else if (result.IsLockedOut)
         {
+            Loading = false;
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
+            Loading = false;
             errorMessage = "Error: Invalid login attempt.";
         }
     }
