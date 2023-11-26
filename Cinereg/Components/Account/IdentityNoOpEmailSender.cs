@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using FluentEmail.Core;
 using FluentEmail.Razor;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Cinereg.Components.Account
 {
@@ -25,8 +26,10 @@ namespace Cinereg.Components.Account
 
         public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
         {
+            var regex = new Regex(Regex.Escape(";"));
             _email = _config["EmailSender:Email"];
             _password = _config["EmailSender:Password"];
+            confirmationLink = regex.Replace(confirmationLink, "&", 1);
             System.Net.NetworkCredential credentials = new(_email, _password);
             var sender = new SmtpSender(() => new SmtpClient("smtp-mail.outlook.com", 587)
             {
