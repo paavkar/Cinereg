@@ -1,4 +1,4 @@
-using Cinereg.Client.Pages;
+using Cinereg.Client.Components.Pages;
 using Cinereg.Components;
 using Cinereg.Components.Account;
 using Cinereg.Data;

@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\Layout\" />
+  </ItemGroup>
+
 </Project>
