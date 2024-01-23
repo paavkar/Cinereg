@@ -26,6 +26,7 @@ namespace Cinereg.Components.Account
 
         public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
         {
+            System.Console.WriteLine("lähetyksessä");
             var regex = new Regex(Regex.Escape(";"));
             _email = _config["EmailSender:Email"];
             _password = _config["EmailSender:Password"];
