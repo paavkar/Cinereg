@@ -39,15 +39,35 @@ else
                             <FluentLabel Typo="Typography.H5">
                                 Date
                                 <FluentLabel Typo="Typography.Body">
-                                    @item.dtDateTime.ToShortDateString()
+                                    @item.dtDateTime.ToLocalTime().ToShortDateString()
                                 </FluentLabel>
                             </FluentLabel>
                             <FluentLabel Typo="Typography.H5">
                                 Time
                                 <FluentLabel Typo="Typography.Body">
-                                    @item.dtDateTime.TimeOfDay
+                                    @item.dtDateTime.ToLocalTime().ToShortTimeString() (UTC+@TimeZoneInfo.Local.GetUtcOffset(item.dtDateTime.ToLocalTime()).Hours)
                                 </FluentLabel>
                             </FluentLabel>
+                            @foreach (var weather in item.weather)
+                            {
+                                switch (weather.main)
+                                {
+                                    case "Snow":
+                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherSnowflake())" />
+                                        break;
+                                    case "Clear":
+                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherSunny())" />
+                                        break;
+                                    case "Rain":
+                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherRain())" />
+                                        break;
+                                    case "Clouds":
+                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherCloudy())" />
+                                        break;
+                                    default: break;
+                                }
+                                <FluentLabel Typo="Typography.Body">@weather.description[0].ToString().ToUpper()@weather.description.Substring(1)</FluentLabel>
+                            }
                         </FluentStack>
                         <FluentStack Orientation="Orientation.Vertical">
                             <FluentLabel Typo="Typography.H5">
@@ -56,29 +76,18 @@ else
                                     @item.main.temp °C
                                 </FluentLabel>
                             </FluentLabel>
-                            @foreach (var weather in item.weather)
-                            {
-                                switch (weather.main)
-                                {
-                                    case "Snow":
-                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherSnow())" />
-                                        break;
-                                    case "Clear":
-                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherSunny())" />
-                                        break;
-                                    case "Rain":
-                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherRain())" />
-                                        break;
-                                    case "Clouds":
-                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherCloudy())" />
-                                        break;
-                                    default: break;
-                                }
-                            }
+                            
                             <FluentLabel Typo="Typography.H5">
                                 Wind
                                 <FluentLabel Typo="Typography.Body">
                                     @item.wind.speed m/s
+                                </FluentLabel>
+                            </FluentLabel>
+
+                            <FluentLabel Typo="Typography.H5">
+                                Humidity
+                                <FluentLabel Typo="Typography.Body">
+                                    @item.main.humidity %
                                 </FluentLabel>
                             </FluentLabel>
                         </FluentStack>
@@ -123,7 +132,7 @@ else
         if (weatherForecast.list != null)
         {
             this.forecasts = weatherForecast.list.AsQueryable();
-            Message = $"Weather forecast for {location}";
+            Message = $"4-day weather forecast for {location}";
         }
         else
         {
