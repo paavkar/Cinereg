@@ -25,11 +25,72 @@
 
 @if (forecasts == null)
 {
-    
+
 }
 else
 {
     <FluentGrid>
+        @foreach (var item in forecasts)
+        {
+            <FluentGridItem xs="12" sm="12" md="6" lg="3" xl="2">
+                <FluentCard Style="margin-top: 1rem;" Width="20em;">
+                    <FluentStack>
+                        <FluentStack Orientation="Orientation.Vertical">
+                            <FluentLabel Typo="Typography.H5">
+                                Date
+                                <FluentLabel Typo="Typography.Body">
+                                    @item.dtDateTime.ToShortDateString()
+                                </FluentLabel>
+                            </FluentLabel>
+                            <FluentLabel Typo="Typography.H5">
+                                Time
+                                <FluentLabel Typo="Typography.Body">
+                                    @item.dtDateTime.TimeOfDay
+                                </FluentLabel>
+                            </FluentLabel>
+                        </FluentStack>
+                        <FluentStack Orientation="Orientation.Vertical">
+                            <FluentLabel Typo="Typography.H5">
+                                Temperature
+                                <FluentLabel Typo="Typography.Body">
+                                    @item.main.temp °C
+                                </FluentLabel>
+                            </FluentLabel>
+                            @foreach (var weather in item.weather)
+                            {
+                                switch (weather.main)
+                                {
+                                    case "Snow":
+                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherSnow())" />
+                                        break;
+                                    case "Clear":
+                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherSunny())" />
+                                        break;
+                                    case "Rain":
+                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherRain())" />
+                                        break;
+                                    case "Clouds":
+                                        <FluentIcon Value="@(new Icons.Regular.Size24.WeatherCloudy())" />
+                                        break;
+                                    default: break;
+                                }
+                            }
+                            <FluentLabel Typo="Typography.H5">
+                                Wind
+                                <FluentLabel Typo="Typography.Body">
+                                    @item.wind.speed m/s
+                                </FluentLabel>
+                            </FluentLabel>
+                        </FluentStack>
+                    </FluentStack>
+
+
+                </FluentCard>
+            </FluentGridItem>
+
+        }
+    </FluentGrid>
+    @* <FluentGrid>
         <FluentGridItem xs="12">
             <FluentDataGrid Id="weathergrid" Items=@forecasts ResizableColumns="true" Pagination="@pagination" Style="height: 405px; overflow:auto;">
                 <PropertyColumn Title="Date" Property="@(c => c!.dtDateTime)" Sortable="true" Align=Align.Start />
@@ -43,7 +104,7 @@ else
             </FluentDataGrid>
             <FluentPaginator State="@pagination" />
         </FluentGridItem>
-</FluentGrid>
+    </FluentGrid> *@
 }
 
 @code {

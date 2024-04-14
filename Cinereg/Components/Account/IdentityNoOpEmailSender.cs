@@ -2,7 +2,6 @@ using Cinereg.Data;
 using FluentEmail.Smtp;
 using System.Net.Mail;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using FluentEmail.Core;
 using FluentEmail.Razor;
 using System.Text;
@@ -13,7 +12,6 @@ namespace Cinereg.Components.Account
     // Remove the "else if (EmailSender is IdentityNoOpEmailSender)" block from RegisterConfirmation.razor after updating with a real implementation.
     internal sealed class IdentityNoOpEmailSender : IEmailSender<ApplicationUser>
     {
-        private readonly IEmailSender emailSender = new NoOpEmailSender();
         private readonly IConfiguration _config;
 
         string _email = "";
@@ -26,7 +24,6 @@ namespace Cinereg.Components.Account
 
         public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
         {
-            System.Console.WriteLine("lähetyksessä");
             var regex = new Regex(Regex.Escape(";"));
             _email = _config["EmailSender:Email"];
             _password = _config["EmailSender:Password"];

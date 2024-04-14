@@ -10,7 +10,6 @@
 
     async Task DeleteMovie()
     {
-        System.Console.WriteLine(Id);
         await MovieService.DeleteMovie(Id);
         NavigationManager.NavigateTo("/movies");
     }
