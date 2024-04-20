@@ -4,15 +4,9 @@
 
 @rendermode InteractiveServer
 
-<style>
-    h2 {
-        text-align: center;
-    }
-</style>
-
 <PageTitle>Weather</PageTitle>
 
-<FluentLabel Typo="Typography.PageTitle">Weather</FluentLabel>
+<FluentLabel Typo="Typography.H1" Alignment="HorizontalAlignment.Center">Weather</FluentLabel>
 <FluentLabel Typo="Typography.H2" Alignment="HorizontalAlignment.Center">@Message</FluentLabel>
 <FluentStack Orientation="Orientation.Vertical">
     <FluentTextField Label="Location"
@@ -56,7 +50,7 @@ else
                                         <FluentIcon Value="@(new Icons.Regular.Size48.WeatherSnowflake())" />
                                         break;
                                     case "Clear":
-                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherSunny())" />
+                                        <FluentIcon Value="@(new Icons.Regular.Size48.WeatherSunny())" Color="Color.Custom" CustomColor="@CustomColor" />
                                         break;
                                     case "Rain":
                                         <FluentIcon Value="@(new Icons.Regular.Size48.WeatherRain())" />
@@ -124,6 +118,8 @@ else
 
     private WeatherForecastDTO? weatherForecast;
     private IQueryable<List>? forecasts;
+
+    private string CustomColor { get; set; } = "#FCE570";
 
     async Task RetrieveForecast()
     {

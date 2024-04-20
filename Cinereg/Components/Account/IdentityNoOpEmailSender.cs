@@ -1,9 +1,9 @@
 using Cinereg.Data;
-using FluentEmail.Smtp;
-using System.Net.Mail;
-using Microsoft.AspNetCore.Identity;
 using FluentEmail.Core;
 using FluentEmail.Razor;
+using FluentEmail.Smtp;
+using Microsoft.AspNetCore.Identity;
+using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,16 +17,22 @@ namespace Cinereg.Components.Account
         string _email = "";
         string _password = "";
 
-        public IdentityNoOpEmailSender(IConfiguration config) 
+        public IdentityNoOpEmailSender(IConfiguration config)
         {
             _config = config;
+            SetEmailPassword();
+        }
+
+        public void SetEmailPassword()
+        {
+            _email = _config["EmailSender:Email"]!;
+            _password = _config["EmailSender:Password"]!;
         }
 
         public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
         {
             var regex = new Regex(Regex.Escape(";"));
-            _email = _config["EmailSender:Email"];
-            _password = _config["EmailSender:Password"];
+
             confirmationLink = regex.Replace(confirmationLink, "&", confirmationLink.Count(x => x == ';'));
             System.Net.NetworkCredential credentials = new(_email, _password);
             var sender = new SmtpSender(() => new SmtpClient("smtp-mail.outlook.com", 587)
@@ -46,7 +52,7 @@ namespace Cinereg.Components.Account
             template.AppendLine("<p>You can ignore this email if this was not you</p>");
 
             var emailToSend = Email
-                .From("paavo_karppinen_dev@outlook.com")
+                .From(_email)
                 .To(email)
                 .Subject("Confirm your email")
                 .UsingTemplate(template.ToString(), new { Email = email, ConfirmationLink = confirmationLink })
@@ -58,8 +64,6 @@ namespace Cinereg.Components.Account
 
         public Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
         {
-            _email = _config["EmailSender:Email"];
-            _password = _config["EmailSender:Password"];
             System.Net.NetworkCredential credentials = new(_email, _password);
             var sender = new SmtpSender(() => new SmtpClient("smtp-mail.outlook.com", 587)
             {
@@ -78,7 +82,7 @@ namespace Cinereg.Components.Account
             template.AppendLine("<p>You can ignore this email if this was not you</p>");
 
             var emailToSend = Email
-                .From("paavo_karppinen_dev@outlook.com")
+                .From(_email)
                 .To(email)
                 .Subject("Reset your password")
                 .UsingTemplate(template.ToString(), new { Email = email, ResetLink = resetLink })
@@ -87,11 +91,9 @@ namespace Cinereg.Components.Account
             return Task.CompletedTask;
             //return emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
         }
-        
+
         public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
         {
-            _email = _config["EmailSender:Email"];
-            _password = _config["EmailSender:Password"];
             System.Net.NetworkCredential credentials = new(_email, _password);
             var sender = new SmtpSender(() => new SmtpClient("smtp-mail.outlook.com", 587)
             {
@@ -110,7 +112,7 @@ namespace Cinereg.Components.Account
             template.AppendLine("<p>You can ignore this email if this was not you</p>");
 
             var emailToSend = Email
-                .From("paavo_karppinen_dev@outlook.com")
+                .From(_email)
                 .To(email)
                 .Subject("Reset your password")
                 .UsingTemplate(template.ToString(), new { Email = email, ResetCode = resetCode })
@@ -119,6 +121,6 @@ namespace Cinereg.Components.Account
             return Task.CompletedTask;
             //return emailSender.SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}");
         }
-            
+
     }
 }

@@ -1,0 +1,77 @@
+﻿@rendermode InteractiveServer
+
+@inject BaseLayerLuminance BaseLayerLuminance
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@if (_isDark)
+{
+    <FluentButton Style="margin-left: 10px;" BackgroundColor="rgba(0, 0, 0, 0)" OnClick="SetMode" IconStart="@(new Icons.Filled.Size20.WeatherSunny().WithColor(Color.Warning))"></FluentButton>
+}
+else
+{
+    <FluentButton Style="margin-left: 10px;" BackgroundColor="rgba(0, 0, 0, 0)" OnClick="SetMode" IconStart="@(new Icons.Filled.Size20.WeatherMoon().WithColor(Color.Warning))"></FluentButton>
+}
+
+@code {
+    public StandardLuminance Luminance { get; set; }
+
+    public OfficeColor? OfficeColor { get; set; }
+
+    public bool _isDark;
+
+    public string Key { get; set; } = "mode";
+    private bool isConnected;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isConnected = true;
+            await LoadStateAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadStateAsync()
+    {
+        var result = await ProtectedLocalStore.GetAsync<int>(Key);
+        if (result.Success)
+        {
+            if (result.Value == 1) 
+            {
+                Luminance = StandardLuminance.DarkMode;
+                await BaseLayerLuminance.WithDefault(Luminance.GetLuminanceValue());
+                _isDark = true;
+            }
+            else 
+            {
+                Luminance = StandardLuminance.LightMode;
+                await BaseLayerLuminance.WithDefault(Luminance.GetLuminanceValue());
+                _isDark = false;
+            }
+        }
+        else
+        {
+            Luminance = StandardLuminance.DarkMode;
+            await BaseLayerLuminance.WithDefault(Luminance.GetLuminanceValue());
+            _isDark = true;
+        }
+    }
+
+    private async Task SetMode()
+    {
+        IsDark = !IsDark;
+        await ProtectedLocalStore.SetAsync(Key, Luminance);
+    }
+
+    public bool IsDark
+    {
+        get => _isDark;
+        set
+        {
+            _isDark = value;
+            Luminance = _isDark ? StandardLuminance.DarkMode : StandardLuminance.LightMode;
+            BaseLayerLuminance.WithDefault(Luminance.GetLuminanceValue());
+        }
+    }
+}

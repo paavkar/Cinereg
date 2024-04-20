@@ -112,6 +112,7 @@ else
         {
             await MovieService.UpdateMovie(Id, Movie);
             Loading = false;
+            NavigationManager.NavigateTo("/movies");
         }
     }
 }
