@@ -56,6 +56,7 @@ else
                               Label="Did you enjoy/like the movie?"
                               @bind-Value="Movie!.Review" />
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
+                <FluentButton Appearance="Appearance.Accent" OnClick="ToMovies">Back to Movies</FluentButton>
             </FluentStack>
         </EditForm>
     </FluentGridItem>
@@ -114,5 +115,10 @@ else
             Loading = false;
             NavigationManager.NavigateTo("/movies");
         }
+    }
+
+    public void ToMovies()
+    {
+        NavigationManager.NavigateTo("/movies");
     }
 }
