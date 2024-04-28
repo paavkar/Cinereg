@@ -26,6 +26,10 @@ builder.Services.AddRazorComponents()
 // Add FluentUI
 builder.Services.AddFluentUIComponents();
 
+builder.Services.AddLocalization();
+
+builder.Services.AddControllers();
+
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<UserAccessor>();
 builder.Services.AddScoped<SimpleUserAccessor>();
@@ -89,6 +93,16 @@ else
 }
 
 app.UseHttpsRedirection();
+
+var supportedCultures = new[] { "en-GB", "fi-FI" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[1])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
+app.MapControllers();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

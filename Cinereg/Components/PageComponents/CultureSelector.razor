@@ -1,0 +1,47 @@
+﻿@using System.Runtime.InteropServices
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<FluentSelect TOption="CultureInfo"
+              Items="supportedCultures"
+              OptionValue="@(c => c.ToString())"
+              OptionText="@(c => cultureDict[c.ToString()])"
+              @bind-SelectedOption="@Culture">
+</FluentSelect>
+
+@code
+{
+    private Dictionary<string, string> cultureDict =
+        new()
+                {
+            { "en-GB", "English (United Kingdom)" },
+            { "fi-FI", "suomi (Suomi)" }
+                };
+
+    private CultureInfo[] supportedCultures = new[]
+    {
+        new CultureInfo("en-GB"),
+        new CultureInfo("fi-FI"),
+    };
+
+    private CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {
+                JS.InvokeVoidAsync("blazorCulture.set", value.Name);
+
+                var uri = new Uri(Navigation.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
+
+                Navigation.NavigateTo(
+                    $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                    forceLoad: true);
+            }
+        }
+    }
+}
