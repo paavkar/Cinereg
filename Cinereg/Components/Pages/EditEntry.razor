@@ -4,15 +4,19 @@
 @rendermode InteractiveServer
 
 @inject IMovieService MovieService
+@inject IToastService ToastService
 @inject NavigationManager NavigationManager
 @inject SimpleUserAccessor UserAccessor
 
+
 @if (Id == null)
 {
+    <PageTitle>Add a new movie</PageTitle>
     <FluentLabel Typo="Typography.PageTitle">Add a movie</FluentLabel>
 }
 else
 {
+    <PageTitle>Edit movie - @Movie.Name</PageTitle>
     <FluentLabel Typo="Typography.PageTitle">Edit @Movie.Name</FluentLabel>
 }
 <FluentGrid>
@@ -90,12 +94,23 @@ else
     {
         if (Id != null)
         {
-            Movie = await MovieService.GetMovieById(Id);
-            reviewOptions = new()
+            Movie DbMovie = await MovieService.GetMovieById(Id);
+            if (DbMovie is not null)
             {
-                { new Option<string> { Value = Movie.Review, Text = Movie.Review, Selected = true } },
-                { new Option<string> { Value = Movie.Review == "Yes" ? "No" : "Yes", Text = Movie.Review == "Yes" ? "No" : "Yes",  } },
-            };
+                Movie = DbMovie;
+                reviewOptions = new()
+                {
+                    { new Option<string> { Value = Movie.Review, Text = Movie.Review, Selected = true } },
+                    { new Option<string> { Value = Movie.Review == "Yes" ? "No" : "Yes", Text = Movie.Review == "Yes" ? "No" : "Yes",  } },
+                };
+            }
+            else
+            {
+                ToastService.ShowError("No movie was found.");
+                ToMovies();
+                return;
+            }
+
         }
     }
 

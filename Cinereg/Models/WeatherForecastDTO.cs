@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Cinereg.Entities
+namespace Cinereg.Models
 {
     public class WeatherForecastDTO
     {

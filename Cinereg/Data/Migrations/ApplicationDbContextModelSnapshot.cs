@@ -17,7 +17,7 @@ namespace Cinereg.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -87,7 +87,7 @@ namespace Cinereg.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Cinereg.Entities.Movie", b =>
+            modelBuilder.Entity("Cinereg.Models.Movie", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
@@ -153,22 +153,6 @@ namespace Cinereg.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "638c9ad1-ef81-4476-a1b1-9a77bdff8e4b",
-                            ConcurrencyStamp = "53a1fb4c-de68-4c02-97c1-7bfd7d829ede",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        },
-                        new
-                        {
-                            Id = "e2985af6-1797-446f-b5d8-1e237c0a956c",
-                            ConcurrencyStamp = "bc2ab4e6-09fb-45dd-b868-1b16e51efb67",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -5,6 +5,7 @@ using Cinereg.Data;
 using Cinereg.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
 
@@ -26,7 +27,10 @@ builder.Services.AddRazorComponents()
 // Add FluentUI
 builder.Services.AddFluentUIComponents();
 
-builder.Services.AddLocalization();
+builder.Services.AddLocalization(options =>
+{
+    options.ResourcesPath = "Resources";
+});
 
 builder.Services.AddControllers();
 
@@ -59,7 +63,10 @@ builder.Services.AddAuthentication(options =>
        options.ClientId = configuration["Authentication:GitHub:ClientId"];
        options.ClientSecret = configuration["Authentication:GitHub:ClientSecret"];
    })
+   .AddBearerToken("Identity.Bearer")
    .AddIdentityCookies();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -107,6 +114,18 @@ app.MapControllers();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.MapPost("/logout", async (SignInManager<ApplicationUser> signInManager,
+    [FromBody] object empty) =>
+{
+    if (empty != null)
+    {
+        await signInManager.SignOutAsync();
+        return Results.Ok();
+    }
+    return Results.Unauthorized();
+})
+.RequireAuthorization();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
@@ -114,5 +133,6 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+app.MapIdentityApi<ApplicationUser>();
 
 app.Run();

@@ -1,4 +1,4 @@
-﻿using Cinereg.Entities;
+﻿using Cinereg.Models;
 
 namespace Cinereg.Services
 {

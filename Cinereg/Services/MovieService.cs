@@ -1,5 +1,5 @@
 ﻿using Cinereg.Data;
-using Cinereg.Entities;
+using Cinereg.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cinereg.Services
@@ -59,7 +59,7 @@ namespace Cinereg.Services
                 await _context.SaveChangesAsync();
                 return dbMovie;
             }
-            throw new Exception("Movie not found.");
+            return dbMovie;
         }
     }
 }

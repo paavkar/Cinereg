@@ -15,6 +15,7 @@
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject RoleManager<IdentityRole> RoleManager
 
 <PageTitle>Register</PageTitle>
 
@@ -84,6 +85,8 @@
             return;
         }
 
+        var userRoleExists = await RoleManager.RoleExistsAsync("User");
+        if (!userRoleExists) await RoleManager.CreateAsync(new IdentityRole("User"));
         await UserManager.AddToRoleAsync(user, "User");
         Logger.LogInformation("User created a new account with password.");
 
