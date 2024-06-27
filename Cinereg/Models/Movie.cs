@@ -7,7 +7,7 @@ namespace Cinereg.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
@@ -16,8 +16,7 @@ namespace Cinereg.Models
         public string Genre { get; set; }
         [Required]
         public string Director { get; set; }
-        [Required]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
         [Required]
         public int WatchedYear { get; set; } = DateTime.Now.Year;
         [Required]

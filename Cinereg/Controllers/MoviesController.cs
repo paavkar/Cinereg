@@ -98,6 +98,9 @@ namespace Cinereg.Controllers
             {
                 return Unauthorized("No token given or expired token given.");
             }
+            var user = await _userManager.GetUserAsync(authenticationResult.Principal);
+
+            movie.UserId = user.Id;
 
             await _movieService.AddMovie(movie);
 
