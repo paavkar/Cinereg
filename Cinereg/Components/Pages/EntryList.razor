@@ -9,13 +9,14 @@
 
 <FluentLabel Typo="Typography.PageTitle">Movie List</FluentLabel>
 
-@if(movies == null)
+@if (movies == null)
 {
-    <span>Loading...</span>
+   <FluentProgressRing Style="margin: 1em 0;" />
 }
-else if(movies.Count == 0)
+else if (movies.Count == 0)
 {
     <FluentLabel>No movies found.</FluentLabel>
+    <CreateMovieButton />
 }
 else
 {
@@ -24,8 +25,8 @@ else
             <InteractiveDataGrid movies="@movies" />
         </FluentGridItem>
     </FluentGrid>
+    <CreateMovieButton />
 }
-<CreateMovieButton />
 
 @code {
     private ApplicationUser user = default!;

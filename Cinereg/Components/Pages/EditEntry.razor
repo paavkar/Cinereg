@@ -22,7 +22,7 @@ else
 <FluentGrid>
     <FluentGridItem xs="8">
         <EditForm Model="@Movie" OnValidSubmit="Submit" FormName="editMovie">
-            <FluentStack Orientation="Orientation.Vertical">
+            <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 1em;">
                 <FluentTextField Label="Title"
                                  Placeholder="Enter the movie title"
                                  Required="true"
@@ -59,8 +59,10 @@ else
                               OptionSelected="@(i => i.Selected)"
                               Label="Did you enjoy/like the movie?"
                               @bind-Value="Movie!.Review" />
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
-                <FluentButton Appearance="Appearance.Accent" OnClick="ToMovies">Back to Movies</FluentButton>
+                <FluentStack Style="margin-top: 1em;">
+                    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent" OnClick="ToMovies">Back to Movies</FluentButton>
+                </FluentStack>
             </FluentStack>
         </EditForm>
     </FluentGridItem>

@@ -8,9 +8,9 @@
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.AddSquare())" IconColor="Color.Accent">Counter</FluentNavLink>
+            @* <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.AddSquare())" IconColor="Color.Accent">Counter</FluentNavLink> *@
             <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherRainShowersDay())" IconColor="Color.Accent">Weather</FluentNavLink>
-            <FluentNavLink Href="auth" Icon="@(new Icons.Regular.Size20.LockClosedKey())" IconColor="Color.Accent">Auth Required</FluentNavLink>
+            @* <FluentNavLink Href="auth" Icon="@(new Icons.Regular.Size20.LockClosedKey())" IconColor="Color.Accent">Auth Required</FluentNavLink> *@
             <AuthorizeView>
                 <Authorized>
                     <FluentNavLink Href="movies" Icon="@(new Icons.Regular.Size20.MoviesAndTv())" IconColor="Color.Accent">Movies</FluentNavLink>
