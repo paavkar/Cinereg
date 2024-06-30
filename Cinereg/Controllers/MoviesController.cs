@@ -26,24 +26,24 @@ namespace Cinereg.Controllers
         [HttpGet("")]
         public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
-                return Unauthorized("No token given or expired token given.");
+                return Unauthorized("No token, malformed token or expired token given.");
             }
 
             var user = await _userManager.GetUserAsync(authenticationResult.Principal);
-            return await _movieService.GetAllMovies(user.Id);
+            return await _movieService.GetAllMovies(user!.Id);
         }
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Movie>> GetMovie(string id)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
-                return Unauthorized("No token given or expired token given.");
+                return Unauthorized("No token, malformed token or expired token given.");
             }
             var user = await _userManager.GetUserAsync(authenticationResult.Principal);
             var movie = await _movieService.GetMovieById(id);
@@ -53,7 +53,7 @@ namespace Cinereg.Controllers
                 return NotFound("No movie found with given Id.");
             }
 
-            if (movie.UserId != user.Id)
+            if (movie.UserId != user!.Id)
             {
                 return Unauthorized("Authenticated user's and movie's user do not match.");
             }
@@ -64,12 +64,12 @@ namespace Cinereg.Controllers
         // PUT: api/Movies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMovie(string id, [FromBody] Movie movie)
+        public async Task<ActionResult> PutMovie(string id, [FromBody] Movie movie)
         {
             var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
-                return Unauthorized("No token given or expired token given.");
+                return Unauthorized("No token, malformed token or expired token given.");
             }
             var user = await _userManager.GetUserAsync(authenticationResult.Principal);
 
@@ -78,14 +78,14 @@ namespace Cinereg.Controllers
                 return BadRequest();
             }
 
-            if (movie.UserId != user.Id)
+            if (movie.UserId != user!.Id)
             {
                 return Unauthorized("Authenticated user's and movie's user do not match.");
             }
 
-            await _movieService.UpdateMovie(id, movie);
+            var updatedMovie = await _movieService.UpdateMovie(id, movie);
 
-            return Ok();
+            return Ok(updatedMovie);
         }
 
         // POST: api/Movies
@@ -93,14 +93,14 @@ namespace Cinereg.Controllers
         [HttpPost]
         public async Task<ActionResult<Movie>> PostMovie([FromBody] Movie movie)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
-                return Unauthorized("No token given or expired token given.");
+                return Unauthorized("No token, malformed token or expired token given.");
             }
             var user = await _userManager.GetUserAsync(authenticationResult.Principal);
 
-            movie.UserId = user.Id;
+            movie.UserId = user!.Id;
 
             await _movieService.AddMovie(movie);
 
@@ -109,12 +109,12 @@ namespace Cinereg.Controllers
 
         // DELETE: api/Movies/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMovie(string id)
+        public async Task<ActionResult> DeleteMovie(string id)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
-                return Unauthorized("No token given or expired token given.");
+                return Unauthorized("No token, malformed token or expired token given.");
             }
             var user = await _userManager.GetUserAsync(authenticationResult.Principal);
 
@@ -122,17 +122,5 @@ namespace Cinereg.Controllers
 
             return NoContent();
         }
-
-        //public async Task<IActionResult> GetUser()
-        //{
-        //    var authenticationResult = await _httpContextAccessor.HttpContext.AuthenticateAsync("Identity.Bearer");
-        //    if (!authenticationResult.Succeeded)
-        //    {
-        //        return Unauthorized("No token given or expired token given.");
-        //    }
-        //    var user = await _userManager.GetUserAsync(authenticationResult.Principal);
-
-        //    return user;
-        //}
     }
 }
