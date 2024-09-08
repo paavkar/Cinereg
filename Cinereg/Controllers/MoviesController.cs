@@ -12,21 +12,19 @@ namespace Cinereg.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly IMovieService _movieService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         readonly UserManager<ApplicationUser> _userManager;
 
-        public MoviesController(IMovieService movieService, IHttpContextAccessor httpContextAccessor, UserManager<ApplicationUser> userManager)
+        public MoviesController(IMovieService movieService, UserManager<ApplicationUser> userManager)
         {
             _movieService = movieService;
-            _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
         }
 
         // GET: api/Movies
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+        public async Task<ActionResult<IEnumerable<MovieWithGenres>>> GetMovies()
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
                 return Unauthorized("No token, malformed token or expired token given.");
@@ -38,9 +36,9 @@ namespace Cinereg.Controllers
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(string id)
+        public async Task<ActionResult<MovieWithGenres>> GetMovie(string id)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
                 return Unauthorized("No token, malformed token or expired token given.");
@@ -64,9 +62,9 @@ namespace Cinereg.Controllers
         // PUT: api/Movies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult> PutMovie(string id, [FromBody] Movie movie)
+        public async Task<ActionResult> PutMovie(string id, [FromBody] MovieWithGenres movie)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
                 return Unauthorized("No token, malformed token or expired token given.");
@@ -84,16 +82,15 @@ namespace Cinereg.Controllers
             }
 
             var updatedMovie = await _movieService.UpdateMovie(id, movie);
-
             return Ok(updatedMovie);
         }
 
         // POST: api/Movies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Movie>> PostMovie([FromBody] Movie movie)
+        public async Task<ActionResult<MovieWithGenres>> PostMovie([FromBody] MovieWithGenres movie)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
                 return Unauthorized("No token, malformed token or expired token given.");
@@ -111,7 +108,7 @@ namespace Cinereg.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteMovie(string id)
         {
-            var authenticationResult = await _httpContextAccessor.HttpContext!.AuthenticateAsync("Identity.Bearer");
+            var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
             {
                 return Unauthorized("No token, malformed token or expired token given.");
