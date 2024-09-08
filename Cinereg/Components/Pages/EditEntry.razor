@@ -28,11 +28,22 @@ else
                                  Required="true"
                                  Size=30
                                  @bind-Value="Movie!.Name" />
-                <FluentTextField Label="Genre"
-                                 Placeholder="Enter the movie genre"
-                                 Required="true"
-                                 Size=30
-                                 @bind-Value="Movie!.Genre" />
+
+                @if(Movie.MovieGenres.Count > 0)
+                {
+                    int j = 1;
+                    foreach (Genre genre in Movie.MovieGenres)
+                    {
+                        <FluentTextField Label=@("Genre " + (j))
+                                         Placeholder="Enter the movie genre"
+                                         Required="true"
+                                         Size=30
+                                         @bind-Value="@genre.Name" />
+                        j++;
+                    }
+                }
+                
+                <FluentButton OnClick="AddGenre" Appearance="Appearance.Accent">Add Genre</FluentButton>
                 <FluentTextField Label="Director"
                                  Placeholder="Enter the movie director"
                                  Required="true"
@@ -83,7 +94,7 @@ else
     private ApplicationUser user { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private Movie Movie { get; set; } = new();
+    private MovieWithGenres Movie { get; set; } = new();
 
     protected override void OnInitialized() => Movie ??= new();
 
@@ -96,7 +107,7 @@ else
     {
         if (Id != null)
         {
-            Movie DbMovie = await MovieService.GetMovieById(Id);
+            MovieWithGenres DbMovie = await MovieService.GetMovieById(Id);
             if (DbMovie is not null)
             {
                 Movie = DbMovie;
@@ -114,6 +125,11 @@ else
             }
 
         }
+    }
+
+    public void AddGenre()
+    {
+        Movie.MovieGenres.Add(new() { Name = string.Empty });
     }
 
     async Task Submit()

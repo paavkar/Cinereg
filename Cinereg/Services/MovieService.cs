@@ -1,5 +1,7 @@
 ﻿using Cinereg.Data;
 using Cinereg.Models;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cinereg.Services
@@ -7,16 +9,105 @@ namespace Cinereg.Services
     public class MovieService : IMovieService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public MovieService(ApplicationDbContext context)
+        public MovieService(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
-        public async Task<Movie> AddMovie(Movie movie)
+        private SqlConnection GetConnection()
         {
-            _context.Movies.Add(movie);
-            await _context.SaveChangesAsync();
+            return new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        }
+
+        public async Task<List<MovieWithGenres>> GetAllMovies(string userId)
+        {
+            //var movies = await _context.Movies.Where(m => m.UserId == userId).ToListAsync();
+            var sql = @"
+                    SELECT m.Id, m.Name, m.ReleaseYear, m.Director, m.UserId, m.WatchedYear, m.ViewingForm, m.Review, g.Id AS GenreId, g.Name
+                    FROM Movies m
+                    JOIN MovieGenres mg ON m.Id = mg.MovieId
+                    JOIN Genres g ON mg.GenreId = g.Id
+                    WHERE m.UserId = @UserId";
+
+            var movieDictionary = new Dictionary<string, MovieWithGenres>();
+            using var connection = GetConnection();
+            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
+                sql,
+                (movie, genre) =>
+                {
+                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
+                    {
+                        movieWithGenres = new MovieWithGenres
+                        {
+                            Id = movie.Id,
+                            Name = movie.Name,
+                            ReleaseYear = movie.ReleaseYear,
+                            Director = movie.Director,
+                            UserId = movie.UserId,
+                            WatchedYear = movie.WatchedYear,
+                            ViewingForm = movie.ViewingForm,
+                            Review = movie.Review,
+                            MovieGenres = new()
+                        };
+                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
+                    }
+
+                    movieWithGenres.MovieGenres.Add(new Genre() { Id = genre.Id, Name = genre.Name });
+                    return movieWithGenres;
+                },
+                new { UserId = userId },
+                splitOn: "GenreId");
+            return moviesDapper.Distinct().ToList();
+        }
+
+        public async Task<List<string>> AddGenres(MovieWithGenres movie)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT * FROM Genres WHERE Name = @GenreName";
+
+            List<string> genreIds = new();
+
+            foreach (Genre genre in movie.MovieGenres)
+            {
+                var existingGenre = await connection.QueryFirstOrDefaultAsync<Genre>(sql, new { GenreName = genre.Name });
+
+                if (existingGenre is null)
+                {
+                    string genreId = Guid.NewGuid().ToString();
+                    genreIds.Add(genreId);
+                    string insertGenreCommand = @"INSERT INTO Genres (Id, Name) VALUES (@Id, @GenreName)";
+                    await connection.ExecuteAsync(insertGenreCommand, new { Id = genreId, GenreName = genre.Name });
+                }
+                else genreIds.Add(existingGenre.Id);
+            }
+
+            return genreIds;
+        }
+
+        public async Task<MovieWithGenres> AddMovie(MovieWithGenres movie)
+        {
+            //_context.Movies.Add(movie);
+            //await _context.SaveChangesAsync();
+
+            using var connection = GetConnection();
+
+            List<string> genreIds = await AddGenres(movie);
+
+            movie.Id = Guid.NewGuid().ToString();
+
+            string insertMovieCommand = @"INSERT INTO Movies (Id, Name, ReleaseYear, Director, UserId, WatchedYear, ViewingForm, Review)
+                                        VALUES (@Id, @Name, @ReleaseYear, @Director, @UserId, @WatchedYear, @ViewingForm, @Review)";
+
+            await connection.ExecuteAsync(insertMovieCommand, movie);
+
+            foreach (string genreId in genreIds)
+            {
+                string insertGenreCommand = @"INSERT INTO MovieGenres (GenreId, MovieId) VALUES (@GenreId, @MovieId)";
+                await connection.ExecuteAsync(insertGenreCommand, new { GenreId = genreId, MovieId = movie.Id });
+            }
 
             return movie;
         }
@@ -33,33 +124,94 @@ namespace Cinereg.Services
             return false;
         }
 
-        public async Task<List<Movie>> GetAllMovies(string userId)
+        public async Task<MovieWithGenres> GetMovieById(string id)
         {
-            var movies = await _context.Movies.Where(m => m.UserId == userId).ToListAsync();
-            return movies;
+            var sql = @"
+                    SELECT m.Id, m.Name, m.ReleaseYear, m.Director, m.UserId, m.WatchedYear, m.ViewingForm, m.Review, g.Id AS GenreId, g.Name
+                    FROM Movies m
+                    JOIN MovieGenres mg ON m.Id = mg.MovieId
+                    JOIN Genres g ON mg.GenreId = g.Id
+                    WHERE m.Id = @Id";
+
+            var movieDictionary = new Dictionary<string, MovieWithGenres>();
+            using var connection = GetConnection();
+            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
+                sql,
+                (movie, genre) =>
+                {
+                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
+                    {
+                        movieWithGenres = new MovieWithGenres
+                        {
+                            Id = movie.Id,
+                            Name = movie.Name,
+                            ReleaseYear = movie.ReleaseYear,
+                            Director = movie.Director,
+                            UserId = movie.UserId,
+                            WatchedYear = movie.WatchedYear,
+                            ViewingForm = movie.ViewingForm,
+                            Review = movie.Review,
+                            MovieGenres = new()
+                        };
+                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
+                    }
+
+                    movieWithGenres.MovieGenres.Add(new Genre() { Id = genre.Id, Name = genre.Name });
+                    return movieWithGenres;
+                },
+                new { Id = id },
+                splitOn: "GenreId");
+            return moviesDapper.Distinct().ToList().First();
+            //return await _context.Movies.FindAsync(id);
         }
 
-        public async Task<Movie> GetMovieById(string id)
+        public async Task<MovieWithGenres> UpdateMovie(string id, MovieWithGenres movie)
         {
-            return await _context.Movies.FindAsync(id);
-        }
+            //var dbMovie = await _context.Movies.FindAsync(id);
+            //if (dbMovie != null)
+            //{
+            //    dbMovie.Name = movie.Name;
+            //    dbMovie.ReleaseYear = movie.ReleaseYear;
+            //    //dbMovie.Genre = movie.Genre;
+            //    dbMovie.Director = movie.Director;
+            //    dbMovie.WatchedYear = movie.WatchedYear;
+            //    dbMovie.ViewingForm = movie.ViewingForm;
+            //    dbMovie.Review = movie.Review;
+            //    await _context.SaveChangesAsync();
+            //    return dbMovie;
+            //}
+            //return dbMovie;
 
-        public async Task<Movie> UpdateMovie(string id, Movie movie)
-        {
-            var dbMovie = await _context.Movies.FindAsync(id);
-            if (dbMovie != null)
+            var dbMovie = await GetMovieById(id);
+            if (dbMovie == null) return null;
+            string sql = @"
+                        UPDATE Movies
+                        SET Name = @Name, ReleaseYear = @ReleaseYear, Director = @Director, WatchedYear = @WatchedYear, ViewingForm = @ViewingForm, Review = @Review
+                        WHERE Id = @Id";
+            using var connection = GetConnection();
+            await connection.ExecuteAsync(sql, movie);
+
+            List<string> genreIds = await AddGenres(movie);
+            string deleteSql = @"
+                             DELETE FROM MovieGenres
+                             WHERE GenreId NOT IN @GenreIds
+                             AND MovieId = @MovieId";
+            await connection.ExecuteAsync(deleteSql, new { GenreIds = genreIds, MovieId = id });
+
+            string addMovieGenresSql = @"
+                                    INSERT INTO MovieGenres (GenreId, MovieId) 
+                                    SELECT @GenreId, @MovieId
+                                    WHERE NOT EXISTS (SELECT 1
+                                                      FROM MovieGenres
+                                                      WHERE MovieId = @MovieId
+                                                      AND GenreId = @GenreId)";
+
+            foreach (var genreId in genreIds)
             {
-                dbMovie.Name = movie.Name;
-                dbMovie.ReleaseYear = movie.ReleaseYear;
-                dbMovie.Genre = movie.Genre;
-                dbMovie.Director = movie.Director;
-                dbMovie.WatchedYear = movie.WatchedYear;
-                dbMovie.ViewingForm = movie.ViewingForm;
-                dbMovie.Review = movie.Review;
-                await _context.SaveChangesAsync();
-                return dbMovie;
+                await connection.ExecuteAsync(addMovieGenresSql, new { GenreId = genreId, MovieId = id });
             }
-            return dbMovie;
+
+            return dbMovie!;
         }
     }
 }
