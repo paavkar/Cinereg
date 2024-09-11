@@ -6,9 +6,12 @@
     <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
     <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
     <TemplateColumn Title="Genre" Sortable="true" Align=Align.Center>
-        @foreach (Genre genre in context.MovieGenres)
+        @if (context.MovieGenres.Count > 0)
         {
-            <p>@genre.Name</p>
+            foreach (Genre genre in context.MovieGenres)
+            {
+                <p>@genre.Name</p>
+            }
         }
     </TemplateColumn>
     <PropertyColumn Title="Director" Property="@(c => c!.Director)" Sortable="true" Align=Align.Center />
