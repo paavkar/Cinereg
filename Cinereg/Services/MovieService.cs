@@ -40,6 +40,7 @@ namespace Cinereg.Services
 
             foreach (Genre genre in movie.MovieGenres)
             {
+                genre.Name = genre.Name.Substring(0, 1).ToUpper() + genre.Name.Substring(1).ToLower();
                 var existingGenre = await connection.QueryFirstOrDefaultAsync<Genre>(sql, new { GenreName = genre.Name });
 
                 if (existingGenre is null)
