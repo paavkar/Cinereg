@@ -25,41 +25,9 @@ namespace Cinereg.Services
         public async Task<List<MovieWithGenres>> GetAllMovies(string userId)
         {
             //var movies = await _context.Movies.Where(m => m.UserId == userId).ToListAsync();
-            var sql = @"
-                    SELECT m.Id, m.Name, m.ReleaseYear, m.Director, m.UserId, m.WatchedYear, m.ViewingForm, m.Review, g.Id AS GenreId, g.Name
-                    FROM Movies m
-                    JOIN MovieGenres mg ON m.Id = mg.MovieId
-                    JOIN Genres g ON mg.GenreId = g.Id
-                    WHERE m.UserId = @UserId";
+            var sql = GetMovieSql();
 
-            var movieDictionary = new Dictionary<string, MovieWithGenres>();
-            using var connection = GetConnection();
-            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
-                sql,
-                (movie, genre) =>
-                {
-                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
-                    {
-                        movieWithGenres = new MovieWithGenres
-                        {
-                            Id = movie.Id,
-                            Name = movie.Name,
-                            ReleaseYear = movie.ReleaseYear,
-                            Director = movie.Director,
-                            UserId = movie.UserId,
-                            WatchedYear = movie.WatchedYear,
-                            ViewingForm = movie.ViewingForm,
-                            Review = movie.Review,
-                            MovieGenres = new()
-                        };
-                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
-                    }
-
-                    movieWithGenres.MovieGenres.Add(new Genre() { Id = genre.Id, Name = genre.Name });
-                    return movieWithGenres;
-                },
-                new { UserId = userId },
-                splitOn: "GenreId");
+            var moviesDapper = await QueryMoviesAsync(sql, new { UserId = userId });
             return moviesDapper.Distinct().ToList();
         }
 
@@ -126,41 +94,9 @@ namespace Cinereg.Services
 
         public async Task<MovieWithGenres> GetMovieById(string id)
         {
-            var sql = @"
-                    SELECT m.Id, m.Name, m.ReleaseYear, m.Director, m.UserId, m.WatchedYear, m.ViewingForm, m.Review, g.Id AS GenreId, g.Name
-                    FROM Movies m
-                    JOIN MovieGenres mg ON m.Id = mg.MovieId
-                    JOIN Genres g ON mg.GenreId = g.Id
-                    WHERE m.Id = @Id";
+            var sql = GetMovieSql(true);
 
-            var movieDictionary = new Dictionary<string, MovieWithGenres>();
-            using var connection = GetConnection();
-            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
-                sql,
-                (movie, genre) =>
-                {
-                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
-                    {
-                        movieWithGenres = new MovieWithGenres
-                        {
-                            Id = movie.Id,
-                            Name = movie.Name,
-                            ReleaseYear = movie.ReleaseYear,
-                            Director = movie.Director,
-                            UserId = movie.UserId,
-                            WatchedYear = movie.WatchedYear,
-                            ViewingForm = movie.ViewingForm,
-                            Review = movie.Review,
-                            MovieGenres = new()
-                        };
-                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
-                    }
-
-                    movieWithGenres.MovieGenres.Add(new Genre() { Id = genre.Id, Name = genre.Name });
-                    return movieWithGenres;
-                },
-                new { Id = id },
-                splitOn: "GenreId");
+            var moviesDapper = await QueryMoviesAsync(sql, new { Id = id });
             return moviesDapper.Distinct().ToList().First();
             //return await _context.Movies.FindAsync(id);
         }
@@ -212,6 +148,57 @@ namespace Cinereg.Services
             }
 
             return dbMovie!;
+        }
+
+        private string GetMovieSql(bool singleMovie = false)
+        {
+            var sql = @"
+                    SELECT m.*, g.Id AS GenreId, g.Name
+                    FROM Movies m
+                    LEFT JOIN MovieGenres mg ON m.Id = mg.MovieId
+                    LEFT JOIN Genres g ON mg.GenreId = g.Id";
+
+            if (singleMovie) sql += " WHERE m.Id = @Id";
+            else sql += " WHERE m.UserId = @UserId";
+
+            return sql;
+        }
+
+        private async Task<IEnumerable<MovieWithGenres>> QueryMoviesAsync(string sql, object parameters)
+        {
+            var movieDictionary = new Dictionary<string, MovieWithGenres>();
+            using var connection = GetConnection();
+            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
+                sql,
+                (movie, genre) =>
+                {
+                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
+                    {
+                        movieWithGenres = new MovieWithGenres
+                        {
+                            Id = movie.Id,
+                            Name = movie.Name,
+                            ReleaseYear = movie.ReleaseYear,
+                            Director = movie.Director,
+                            UserId = movie.UserId,
+                            WatchedYear = movie.WatchedYear,
+                            ViewingForm = movie.ViewingForm,
+                            Review = movie.Review,
+                            MovieGenres = new()
+                        };
+                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
+                    }
+
+                    if (genre.Name != null)
+                    {
+                        movieWithGenres.MovieGenres.Add(genre);
+                    }
+                    return movieWithGenres;
+                },
+                parameters,
+                splitOn: "GenreId");
+
+            return moviesDapper;
         }
     }
 }
