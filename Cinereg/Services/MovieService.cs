@@ -40,6 +40,7 @@ namespace Cinereg.Services
 
             foreach (Genre genre in movie.MovieGenres)
             {
+                genre.Name = genre.Name.Trim();
                 genre.Name = genre.Name.Substring(0, 1).ToUpper() + genre.Name.Substring(1).ToLower();
                 var existingGenre = await connection.QueryFirstOrDefaultAsync<Genre>(sql, new { GenreName = genre.Name });
 
@@ -169,7 +170,7 @@ namespace Cinereg.Services
         {
             var movieDictionary = new Dictionary<string, MovieWithGenres>();
             using var connection = GetConnection();
-            var moviesDapper = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
+            var movies = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
                 sql,
                 (movie, genre) =>
                 {
@@ -199,7 +200,7 @@ namespace Cinereg.Services
                 parameters,
                 splitOn: "GenreId");
 
-            return moviesDapper;
+            return movies;
         }
     }
 }

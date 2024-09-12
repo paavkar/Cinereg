@@ -1,4 +1,4 @@
-﻿@page "/movies"
+﻿@page "/films"
 
 @inject IMovieService MovieService
 @inject UserAccessor UserAccessor
@@ -7,7 +7,7 @@
 
 <PageTitle>Movies</PageTitle>
 
-<FluentLabel Typo="Typography.PageTitle">Movie List</FluentLabel>
+<FluentLabel Typo="Typography.PageTitle">Film List</FluentLabel>
 
 @if (movies == null)
 {
@@ -22,7 +22,17 @@ else
 {
     <FluentGrid>
         <FluentGridItem xs="12">
-            <InteractiveDataGrid movies="@movies" />
+            <FluentTabs @bind-ActiveTabId="@activeid" OnTabChange="HandleOnTabChange">
+                <FluentTab Label="All Films" Id="all">
+                    <InteractiveDataGrid movies="@movies" />
+                </FluentTab>
+                @foreach (var genre in MovieGenres)
+                {
+                    <FluentTab Label=@((genre) + " Films") Id="@genre">
+                        <InteractiveDataGrid movies="@movies.Where(m => m.MovieGenres.Contains(m.MovieGenres.Find(g => g.Name == genre)!)).ToList()" />
+                    </FluentTab>
+                }
+            </FluentTabs>
         </FluentGridItem>
     </FluentGrid>
     <CreateMovieButton />
@@ -31,12 +41,35 @@ else
 @code {
     private ApplicationUser user = default!;
     private List<MovieWithGenres> movies;
+    private List<string> MovieGenres { get; set; } = new();
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    string? activeid = "all";
+    FluentTab? changedto;
 
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         movies = await MovieService.GetAllMovies(user.Id);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (movies != null)
+        {
+            foreach (var movie in movies)
+            {
+                foreach (var genre in movie.MovieGenres)
+                {
+                    if (!MovieGenres.Contains(genre.Name)) MovieGenres.Add(genre.Name);
+                }
+            }
+        }
+    }
+
+    private void HandleOnTabChange(FluentTab tab)
+    {
+        changedto = tab;
     }
 }

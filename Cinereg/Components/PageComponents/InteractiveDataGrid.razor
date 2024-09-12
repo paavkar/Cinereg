@@ -1,6 +1,6 @@
 ﻿@rendermode InteractiveServer
 
-<FluentDataGrid Id="moviegrid" Pagination="@pagination" Items=@iMovies GridTemplateColumns="15em 10em 10em 15em 15em 15em 15em 7em" ResizableColumns="true" Style="height: 37em; overflow-x: auto; margin-top: 1em;">
+<FluentDataGrid Id="moviegrid" Pagination="@pagination" Items=@iMovies GridTemplateColumns="15em 10em 10em 15em 15em 15em 15em 7em" ResizableColumns="true" Style="height: 45em; overflow-x: auto; margin-top: 1em;">
     <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
     <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
     <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
