@@ -13,7 +13,7 @@
             @* <FluentNavLink Href="auth" Icon="@(new Icons.Regular.Size20.LockClosedKey())" IconColor="Color.Accent">Auth Required</FluentNavLink> *@
             <AuthorizeView>
                 <Authorized>
-                    <FluentNavLink Href="movies" Icon="@(new Icons.Regular.Size20.MoviesAndTv())" IconColor="Color.Accent">Movies</FluentNavLink>
+                    <FluentNavLink Href="films" Icon="@(new Icons.Regular.Size20.MoviesAndTv())" IconColor="Color.Accent">Films</FluentNavLink>
                     <FluentNavLink Href="Account/Manage" Icon="@(new Icons.Regular.Size20.Person())">@context.User.Identity?.Name</FluentNavLink>
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
