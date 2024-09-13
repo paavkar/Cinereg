@@ -18,7 +18,7 @@
     <PropertyColumn Title="Did I enjoy/like it?" Property="@(c => c!.Review)" Sortable="true" Align=Align.Center />
     <TemplateColumn Title="Actions" Align="@Align.End">
         <EditMovieButton Id=@context.Id />
-        <DeleteMovieButton Id=@context.Id />
+        <DeleteMovieButton Id=@context.Id Movie=@context />
     </TemplateColumn>
 </FluentDataGrid>
 <FluentPaginator State="@pagination" />
