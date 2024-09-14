@@ -140,18 +140,18 @@ else
             Movie.UserId = user.Id;
             await MovieService.AddMovie(Movie);
             Loading = false;
-            NavigationManager.NavigateTo("/movies");
+            NavigationManager.NavigateTo("/films");
         }
         else
         {
             await MovieService.UpdateMovie(Id, Movie);
             Loading = false;
-            NavigationManager.NavigateTo("/movies");
+            NavigationManager.NavigateTo("/films");
         }
     }
 
     public void ToMovies()
     {
-        NavigationManager.NavigateTo("/movies");
+        NavigationManager.NavigateTo("/films");
     }
 }

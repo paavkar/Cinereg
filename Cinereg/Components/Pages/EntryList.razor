@@ -1,9 +1,12 @@
 ﻿@page "/films"
+@page "/movies"
+@using Microsoft.AspNetCore.Authorization
 
 @inject IMovieService MovieService
 @inject UserAccessor UserAccessor
 
 @attribute [StreamRendering(true)]
+@attribute [Authorize]
 
 <PageTitle>Movies</PageTitle>
 

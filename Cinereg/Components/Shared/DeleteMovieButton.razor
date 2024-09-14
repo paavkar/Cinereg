@@ -1,5 +1,7 @@
 ﻿@inject NavigationManager NavigationManager
 @inject IMovieService MovieService
+@inject IDialogService DialogService
+
 @rendermode InteractiveServer
 
 <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="DeleteMovie" />
@@ -7,10 +9,19 @@
 @code {
     [Parameter]
     public string Id { get; set; }
+    [Parameter]
+    public MovieWithGenres Movie { get; set; }
 
     async Task DeleteMovie()
     {
-        await MovieService.DeleteMovie(Id);
-        NavigationManager.NavigateTo("/movies");
+        var dialog = await DialogService.ShowConfirmationAsync($"Do you want to delete the film {Movie.Name}?", "Yes", "No", "Delete film confirmation");
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await MovieService.DeleteMovie(Id);
+            NavigationManager.NavigateTo("/films");
+        }
     }
 }
