@@ -1,0 +1,46 @@
+﻿@rendermode InteractiveServer
+
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<FluentProfileMenu Initials="@UserEmail[0].ToString().ToUpper()"
+                   OnFooterLinkClick="@(e => NavigationManager.NavigateTo("Account/Manage"))"
+                   PopoverStyle="min-width: 330px;">
+    <HeaderTemplate>
+        <FluentStack Style="display: flex; justify-content: space-between;">
+            <FluentLabel Typo="Typography.Header">Profile menu</FluentLabel>
+            <form action="Account/Logout" method="post">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                <FluentButton Appearance="Appearance.Accent" Color="white" BackgroundColor="green" IconStart="@(new Icons.Regular.Size20.SignOut())" Type="ButtonType.Submit">Logout</FluentButton>
+            </form>
+        </FluentStack>
+    </HeaderTemplate>
+    <ChildContent>
+            <FluentLabel>@UserEmail</FluentLabel>
+    </ChildContent>
+</FluentProfileMenu>
+
+
+@code {
+    [Parameter]
+    public string UserEmail { get; set; } = default!;
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
