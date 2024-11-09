@@ -161,7 +161,7 @@ namespace Cinereg.Services
                     LEFT JOIN Genres g ON mg.GenreId = g.Id";
 
             if (singleMovie) sql += " WHERE m.Id = @Id";
-            else sql += " WHERE m.UserId = @UserId";
+            else sql += " WHERE m.UserId = @UserId ORDER BY m.Name";
 
             return sql;
         }

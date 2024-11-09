@@ -9,11 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Components\Account\Pages\Logout.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.1.0" />
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.2.0" />
+    <PackageReference Include="Azure.Identity" Version="1.12.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
     <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
@@ -31,24 +28,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.10.0" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.10.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
     <PackageReference Include="QRCoderNetCore" Version="1.0.0" />
+    <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Cinereg.Client\Cinereg.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Components\Account\Pages\Logout.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Components\Account\Pages\Logout.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Components\Account\Pages\Logout.razor" />
   </ItemGroup>
 
 </Project>
