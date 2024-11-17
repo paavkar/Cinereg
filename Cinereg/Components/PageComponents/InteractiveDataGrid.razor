@@ -11,7 +11,8 @@
         {
             foreach (Genre genre in context.MovieGenres)
             {
-                <p>@genre.Name</p>
+                <FluentLabel>@genre.Name</FluentLabel>
+                <br />
             }
         }
     </TemplateColumn>

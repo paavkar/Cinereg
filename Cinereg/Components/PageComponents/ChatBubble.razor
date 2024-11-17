@@ -1,0 +1,117 @@
+﻿@implements IDialogContentComponent<List<MovieWithGenres>>
+@using OpenAI.Chat
+@inject IOpenAIService AI
+
+@* Header *@
+@* <FluentDialogHeader>
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader> *@
+
+@* Footer 
+<FluentDialogFooter>
+    @* <FluentTextField Style="width: 100%;" @bind-Value="UserMessage" @oninput="InputMessage">
+        <FluentIcon OnClick="ChatWithGPT" Value="@(new Icons.Regular.Size16.Send())" Color="@Color.Neutral" Slot="end"></FluentIcon>
+    </FluentTextField> 
+</FluentDialogFooter>*@
+
+@* Body *@
+<FluentDialogBody>
+    <FluentStack Orientation="Orientation.Vertical" Style="height: 80vh;">
+        @foreach (var message in Messages)
+        {
+            @if (message.GetType() == typeof(SystemChatMessage))
+                continue;
+            @if (message.GetType() == typeof(UserChatMessage))
+            {
+                <FluentStack HorizontalAlignment="HorizontalAlignment.Right">
+                    <FluentLabel>@message.Content[0].Text</FluentLabel>
+                </FluentStack>
+                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+            }
+            @if (message.GetType() == typeof(AssistantChatMessage))
+            {
+                <FluentStack HorizontalAlignment="HorizontalAlignment.Left" Style="width: 80%">
+                    <FluentLabel>@message.Content[0].Text</FluentLabel>
+                </FluentStack>
+                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+            }
+        }
+        
+    </FluentStack>
+    <FluentSpacer />
+    <FluentTextField Style="width: 100%;" @bind-Value="UserMessage" @oninput="InputMessage">
+        <FluentIcon OnClick="ChatWithGPT" Value="@(new Icons.Regular.Size16.Send())" Color="@Color.Neutral" Slot="end"></FluentIcon>
+    </FluentTextField>
+</FluentDialogBody>
+
+
+
+@code {
+    [Parameter]
+    public List<MovieWithGenres> Content { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    private List<ChatMessage> Messages { get; set; } = new();
+    private string UserMessage { get; set; } = "";
+    private List<string> UserMoviesList { get; set; } = new();
+    private List<string> DirectorsList { get; set; } = new();
+    private List<string> GenresList { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        if (Content.Count > 0)
+        {
+            foreach (var movie in Content)
+            {
+                UserMoviesList.Add(movie.Name);
+                foreach (var genre in movie.MovieGenres)
+                {
+                    if (GenresList.Find(g => g == genre.Name) is null)
+                    {
+                        GenresList.Add(genre.Name);
+                    }
+                }
+                if (DirectorsList.Find(d => d == movie.Director) is null)
+                {
+                    DirectorsList.Add(movie.Director);
+                }
+            }
+            string movies = String.Join(", ", UserMoviesList);
+            string genres = String.Join(", ", GenresList);
+            string directors = String.Join(", ", DirectorsList);
+
+            string systemMessage = $@"You are a helpful assistant to talk about films. Current user has watched the following films: {movies}. 
+                Their watched films' genres are: {genres}. And they have watched films from the following directors: {directors}. 
+                You can give suggestions based on the films they've watched, films of the same (or similar) genre, or films from the directors whose films they have already watched. 
+                You are not allowed to talk about anything that doesn't relate to films/movies.";
+            Messages.Add(new SystemChatMessage(systemMessage));
+        }
+        else 
+        {
+            Messages.Add(new SystemChatMessage(@"You are a helpful assistant to talk about films. They don't currently have any films saved that they've watched.
+            You are not allowed to talk about anything that doesn't relate to films/movies."));
+        }
+        Messages.Add(new AssistantChatMessage("Hello! I'm your helpful AI Assistant about films. What would you like to chat of?"));
+    }
+
+    public void InputMessage(ChangeEventArgs e)
+    {
+        UserMessage = e.Value!.ToString()!;
+    }
+
+    public void ChatWithGPT()
+    {
+        Messages.Add(new UserChatMessage(UserMessage));
+        ChatCompletion chatCompletion = AI.GetChatCompletion(Messages);
+
+        Messages.Add(new AssistantChatMessage(chatCompletion.Content[0].Text));
+        StateHasChanged();
+        UserMessage = "";
+    }
+}
