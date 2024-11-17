@@ -11,16 +11,11 @@
     </FluentStack>
 </FluentDialogHeader> *@
 
-@* Footer 
-<FluentDialogFooter>
-    @* <FluentTextField Style="width: 100%;" @bind-Value="UserMessage" @oninput="InputMessage">
-        <FluentIcon OnClick="ChatWithGPT" Value="@(new Icons.Regular.Size16.Send())" Color="@Color.Neutral" Slot="end"></FluentIcon>
-    </FluentTextField> 
-</FluentDialogFooter>*@
+
 
 @* Body *@
 <FluentDialogBody>
-    <FluentStack Orientation="Orientation.Vertical" Style="height: 80vh;">
+    <FluentStack Orientation="Orientation.Vertical">
         @foreach (var message in Messages)
         {
             @if (message.GetType() == typeof(SystemChatMessage))
@@ -40,13 +35,15 @@
                 <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
             }
         }
-        
     </FluentStack>
-    <FluentSpacer />
+</FluentDialogBody>
+
+@* Footer *@
+<FluentDialogFooter>
     <FluentTextField Style="width: 100%;" @bind-Value="UserMessage" @oninput="InputMessage">
         <FluentIcon OnClick="ChatWithGPT" Value="@(new Icons.Regular.Size16.Send())" Color="@Color.Neutral" Slot="end"></FluentIcon>
     </FluentTextField>
-</FluentDialogBody>
+</FluentDialogFooter>
 
 
 
