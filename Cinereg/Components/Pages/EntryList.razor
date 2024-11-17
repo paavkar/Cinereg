@@ -4,6 +4,7 @@
 
 @inject IMovieService MovieService
 @inject UserAccessor UserAccessor
+@inject IDialogService DialogService
 
 @attribute [StreamRendering(true)]
 @attribute [Authorize]
@@ -14,7 +15,7 @@
 
 @if (movies == null)
 {
-   <FluentProgressRing Style="margin: 1em 0;" />
+    <FluentProgressRing Style="margin: 1em 0;" />
 }
 else if (movies.Count == 0)
 {
@@ -39,6 +40,8 @@ else
         </FluentGridItem>
     </FluentGrid>
     <CreateMovieButton />
+
+    <AIButton movies="@movies" />
 }
 
 @code {

@@ -1,0 +1,30 @@
+﻿@rendermode InteractiveServer
+@inject IDialogService DialogService
+
+<FluentButton OnClick="OpenChat" Appearance="Appearance.Accent" Style="position: fixed; bottom: 7em; right: 5em; z-index: 2; border-radius: 38px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+    <FluentIcon Value="@(new Icons.Regular.Size48.Chat())" Color="Color.Success" Slot="start" />
+</FluentButton>
+
+@code {
+    [Parameter]
+    public List<MovieWithGenres> movies { get; set; }
+
+    private async Task OpenChat()
+    {
+        var dialog = await DialogService.ShowPanelAsync<ChatBubble>(movies, new DialogParameters()
+            {
+                //Alignment = HorizontalAlignment.Left,
+                // Height = "30em",
+                Width = "35em",
+                Title = "Chat with AI about films",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = false,
+                ShowDismiss = true,
+                TrapFocus = false,
+                Modal = false,
+                PrimaryAction = "",
+            });
+
+        // var result = await dialog.Result; // Probably not needed
+    }
+}
