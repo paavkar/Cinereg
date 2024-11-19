@@ -3,6 +3,7 @@ using Cinereg.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Cinereg.Services
 {
@@ -46,7 +47,8 @@ namespace Cinereg.Services
 
                 if (existingGenre is null)
                 {
-                    string genreId = Guid.NewGuid().ToString();
+                    string genreId = genre.Id;
+                    if (genre.Id.IsNullOrEmpty()) genreId = Guid.NewGuid().ToString();
                     genreIds.Add(genreId);
                     string insertGenreCommand = @"INSERT INTO Genres (Id, Name) VALUES (@Id, @GenreName)";
                     await connection.ExecuteAsync(insertGenreCommand, new { Id = genreId, GenreName = genre.Name });

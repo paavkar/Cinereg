@@ -2,8 +2,13 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<FluentLabel Typo="Typography.H1">Welcome to Cinereg!</FluentLabel>
 
-This is my practice Blazor project. This app contains a section registered users to save movie info, meant for saving movies that you've watched.
-<p />
-This app also includes a weather service using OpenWeather API, where you can get 5-day forecast for a location through search.
+<FluentStack Orientation="Orientation.Vertical" Style="margin-top: 1em;">
+    <FluentLabel Typo="Typography.Body">This is my practice Blazor project. This app contains a section registered users to save movie info, meant for saving films/movies that you've watched.</FluentLabel>
+    <FluentLabel Typo="Typography.Body">This app also includes a weather service using OpenWeather API, where you can get 5-day forecast for a location through search.</FluentLabel>
+    <FluentLabel Typo="Typography.Body">Once you've registered and logged in, you can chat with an AI (OpenAI GPT-model) about films/movies.</FluentLabel>
+    <FluentLabel Typo="Typography.Body">If you encounter any issues or have questions (or anything else), you can shoot me an email at 
+        <FluentAnchor Href="mailto:paavo_karppinen_dev@outlook.com" Appearance="Appearance.Hypertext">paavo_karppinen_dev@outlook.com</FluentAnchor>
+    </FluentLabel>
+</FluentStack>

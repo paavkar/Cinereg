@@ -22,57 +22,66 @@ else
 <FluentGrid>
     <FluentGridItem xs="8">
         <EditForm Model="@Movie" OnValidSubmit="Submit" FormName="editMovie">
-            <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 1em;">
-                <FluentTextField Label="Title"
-                                 Placeholder="Enter the movie title"
-                                 Required="true"
-                                 Size=30
-                                 @bind-Value="Movie!.Name" />
+            <FluentStack Style="margin-top: 1em;">
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentTextField Label="Title"
+                    Placeholder="Enter the movie title"
+                    Required="true"
+                    Size=30
+                    @bind-Value="Movie!.Name" />
 
-                @if(Movie.MovieGenres.Count > 0)
-                {
-                    int j = 1;
-                    foreach (Genre genre in Movie.MovieGenres)
+                    @if (Movie.MovieGenres.Count > 0)
                     {
-                        <FluentTextField Label=@("Genre " + (j))
-                                         Placeholder="Enter the movie genre"
-                                         Required="true"
-                                         Size=30
-                                         @bind-Value="@genre.Name" />
-                        j++;
+                        int j = 1;
+                        foreach (Genre genre in Movie.MovieGenres)
+                        {
+                            <FluentTextField Label=@("Genre " + (j))
+                            Placeholder="Enter the movie genre"
+                            Required="true"
+                            Size=30
+                            @bind-Value="@genre.Name" />
+                            if (Movie.MovieGenres.Count > 1 && String.IsNullOrEmpty(genre.Name) && (Id == null || (j != OriginalGenres.Count)))
+                            {
+                                <FluentButton OnClick="@(() => RemoveGenre(genre.Id))" IconStart="@(new Icons.Regular.Size16.Delete())"></FluentButton>
+                            }
+                            j++;
+                        }
                     }
-                }
-                
-                <FluentButton OnClick="AddGenre" Appearance="Appearance.Accent">Add Genre</FluentButton>
-                <FluentTextField Label="Director"
-                                 Placeholder="Enter the movie director"
-                                 Required="true"
-                                 Size=30
-                                 @bind-Value="Movie!.Director" />
-                <FluentNumberField Label="Release year"
-                                   Placeholder="Enter the movie release year"
-                                   Required="true"
-                                   Size=26
-                                   @bind-Value="Movie!.ReleaseYear" />
-                <FluentNumberField Label="Watched year"
-                                   Placeholder="Enter the year you watched the movie"
-                                   Required="true"
-                                   Size=26
-                                   @bind-Value="Movie!.WatchedYear" />
-                <FluentTextField Label="Viewing format"
-                                 Placeholder="Enter the movie viewing format"
-                                 Required="true"
-                                 Size=30
-                                 @bind-Value="Movie!.ViewingForm" />
-                <FluentSelect Items=@reviewOptions
-                              OptionText="@(i => i.Text)"
-                              OptionValue="@(i => i.Value)"
-                              OptionSelected="@(i => i.Selected)"
-                              Label="Did you enjoy/like the movie?"
-                              @bind-Value="Movie!.Review" />
-                <FluentStack Style="margin-top: 1em;">
-                    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
-                    <FluentButton Appearance="Appearance.Accent" OnClick="ToMovies">Back to Movies</FluentButton>
+                    <FluentButton OnClick="AddGenre" Appearance="Appearance.Accent">Add Genre</FluentButton>
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentTextField Label="Director"
+                    Placeholder="Enter the movie director"
+                    Required="true"
+                    Size=30
+                    @bind-Value="Movie!.Director" />
+                    <FluentNumberField Label="Release year"
+                    Placeholder="Enter the movie release year"
+                    Required="true"
+                    Size=26
+                    @bind-Value="Movie!.ReleaseYear" />
+                    <FluentNumberField Label="Watched year"
+                    Placeholder="Enter the year you watched the movie"
+                    Required="true"
+                    Size=26
+                    @bind-Value="Movie!.WatchedYear" />
+                    <FluentTextField Label="Viewing format"
+                    Placeholder="Enter the movie viewing format"
+                    Required="true"
+                    Size=30
+                    @bind-Value="Movie!.ViewingForm" />
+                    <FluentSelect Items=@reviewOptions
+                    OptionText="@(i => i.Text)"
+                    OptionValue="@(i => i.Value)"
+                    OptionSelected="@(i => i.Selected)"
+                    Label="Did you enjoy/like the movie?"
+                    @bind-Value="Movie!.Review" />
+
+                    <FluentStack Style="margin-top: 1em;">
+                        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
+                        <FluentButton Appearance="Appearance.Accent" OnClick="ToMovies">Back to Movies</FluentButton>
+                    </FluentStack>
                 </FluentStack>
             </FluentStack>
         </EditForm>
@@ -95,6 +104,8 @@ else
 
     [SupplyParameterFromForm]
     private MovieWithGenres Movie { get; set; } = new();
+
+    private List<Genre> OriginalGenres { get; set; } = new();
 
     protected override void OnInitialized() => Movie ??= new();
 
@@ -127,9 +138,30 @@ else
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Id != null)
+            {
+                MovieWithGenres DbMovie = await MovieService.GetMovieById(Id);
+                if (DbMovie is not null)
+                {
+                    OriginalGenres = DbMovie.MovieGenres;
+                }
+
+            }
+        }
+    }
+
     public void AddGenre()
     {
         Movie.MovieGenres.Add(new() { Name = string.Empty });
+    }
+
+    public void RemoveGenre(string id)
+    {
+        Movie.MovieGenres.Remove(Movie.MovieGenres.Find(g => g.Id == id)!);
     }
 
     async Task Submit()
