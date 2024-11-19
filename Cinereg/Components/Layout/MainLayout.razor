@@ -7,11 +7,11 @@
         Cinereg
         <Theme />
         <FluentSpacer />
-        @* <AuthorizeView>
+        <AuthorizeView>
             <Authorized>
                 <UserProfileMenu UserEmail=@context.User.Identity?.Name />
             </Authorized>
-        </AuthorizeView> *@
+        </AuthorizeView>
     </FluentHeader>
     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
         <NavMenu />
