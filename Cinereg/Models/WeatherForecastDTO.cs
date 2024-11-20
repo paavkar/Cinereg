@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Cinereg.Models
+﻿namespace Cinereg.Models
 {
     public class WeatherForecastDTO
     {
@@ -50,7 +48,7 @@ namespace Cinereg.Models
         {
             get
             {
-                return DateTime.Parse(dt_txt);
+                return DateTime.Parse(dt_txt).ToUniversalTime();
             }
         }
     }
