@@ -8,14 +8,23 @@
 
 <FluentLabel Typo="Typography.H1" Alignment="HorizontalAlignment.Center">Weather</FluentLabel>
 <FluentLabel Typo="Typography.H2" Alignment="HorizontalAlignment.Center">@Message</FluentLabel>
+
 <FluentStack Orientation="Orientation.Vertical">
-    <FluentTextField Label="Location"
-                     Placeholder="Search for a location"
-                     Required
-                     @bind-Value="location" />
+    <FluentStack Style="margin-top: 1em;">
+        <FluentTextField Label="Location"
+                         Placeholder="Search for a location"
+                         Required
+                         @bind-Value="location" />
+        <FluentSelect TOption="TimeZoneInfo"
+                      Label="Select time zone"
+                      Items="TimeZones"
+                      Height="30em"
+                      Placeholder="Make a selection..."
+                      OptionText="@(tz => tz.ToString())"
+                      @bind-SelectedOption="@SelectedTimeZone" />
+    </FluentStack>
     <FluentButton OnClick="RetrieveForecast" Appearance="Appearance.Accent">Search</FluentButton>
 </FluentStack>
-
 
 @if (forecasts == null)
 {
@@ -33,13 +42,13 @@ else
                             <FluentLabel Typo="Typography.H5">
                                 Date
                                 <FluentLabel Typo="Typography.Body">
-                                    @item.dtDateTime.ToLocalTime().ToShortDateString()
+                                    @item.dtDateTime.AddHours(SelectedTimeZone.BaseUtcOffset.Hours).ToShortDateString()
                                 </FluentLabel>
                             </FluentLabel>
                             <FluentLabel Typo="Typography.H5">
                                 Time
                                 <FluentLabel Typo="Typography.Body">
-                                    @item.dtDateTime.ToLocalTime().ToShortTimeString() (UTC+@TimeZoneInfo.Local.GetUtcOffset(item.dtDateTime.ToLocalTime()).Hours)
+                                    @item.dtDateTime.AddHours(SelectedTimeZone.BaseUtcOffset.Hours).ToShortTimeString() (UTC@(SelectedTimeZone.BaseUtcOffset.Hours < 0 ? "" : "+")@SelectedTimeZone.BaseUtcOffset.Hours)
                                 </FluentLabel>
                             </FluentLabel>
                             @foreach (var weather in item.weather)
@@ -70,7 +79,7 @@ else
                                     @item.main.temp °C
                                 </FluentLabel>
                             </FluentLabel>
-                            
+
                             <FluentLabel Typo="Typography.H5">
                                 Wind
                                 <FluentLabel Typo="Typography.Body">
@@ -86,28 +95,11 @@ else
                             </FluentLabel>
                         </FluentStack>
                     </FluentStack>
-
-
                 </FluentCard>
             </FluentGridItem>
 
         }
     </FluentGrid>
-    @* <FluentGrid>
-        <FluentGridItem xs="12">
-            <FluentDataGrid Id="weathergrid" Items=@forecasts ResizableColumns="true" Pagination="@pagination" Style="height: 405px; overflow:auto;">
-                <PropertyColumn Title="Date" Property="@(c => c!.dtDateTime)" Sortable="true" Align=Align.Start />
-                <PropertyColumn Title="Temp. (C)" Property="@(c => c!.main.temp)" Sortable="true" Align=Align.Center />
-                <TemplateColumn Title="Summary" Align=Align.End>
-                    @foreach (var weather in context!.weather)
-                    {
-                        <div>@weather.main</div>
-                    }
-                </TemplateColumn>
-            </FluentDataGrid>
-            <FluentPaginator State="@pagination" />
-        </FluentGridItem>
-    </FluentGrid> *@
 }
 
 @code {
@@ -118,8 +110,15 @@ else
 
     private WeatherForecastDTO? weatherForecast;
     private IQueryable<List>? forecasts;
+    private IReadOnlyCollection<TimeZoneInfo> TimeZones { get; set; }
+    private TimeZoneInfo SelectedTimeZone { get; set; } = TimeZoneInfo.Utc;
 
     private string CustomColor { get; set; } = "#FCE570";
+
+    protected override void OnInitialized()
+    {
+        TimeZones = TimeZoneInfo.GetSystemTimeZones();
+    }
 
     async Task RetrieveForecast()
     {
