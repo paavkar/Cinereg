@@ -1,13 +1,15 @@
 ﻿@page "/edit-movie"
 @page "/edit-movie/{id}"
+@using Microsoft.AspNetCore.Authorization
 
 @rendermode InteractiveServer
 
 @inject IMovieService MovieService
 @inject IToastService ToastService
 @inject NavigationManager NavigationManager
-@inject SimpleUserAccessor UserAccessor
+@inject UserAccessor UserAccessor
 
+@attribute [Authorize]
 
 @if (Id == null)
 {
@@ -25,10 +27,10 @@ else
             <FluentStack Style="margin-top: 1em;">
                 <FluentStack Orientation="Orientation.Vertical">
                     <FluentTextField Label="Title"
-                    Placeholder="Enter the movie title"
-                    Required="true"
-                    Size=30
-                    @bind-Value="Movie!.Name" />
+                                     Placeholder="Enter the movie title"
+                                     Required="true"
+                                     Size=30
+                                     @bind-Value="Movie!.Name" />
 
                     @if (Movie.MovieGenres.Count > 0)
                     {
@@ -36,10 +38,10 @@ else
                         foreach (Genre genre in Movie.MovieGenres)
                         {
                             <FluentTextField Label=@("Genre " + (j))
-                            Placeholder="Enter the movie genre"
-                            Required="true"
-                            Size=30
-                            @bind-Value="@genre.Name" />
+                                             Placeholder="Enter the movie genre"
+                                             Required="true"
+                                             Size=30
+                                             @bind-Value="@genre.Name" />
                             if (Movie.MovieGenres.Count > 1 && String.IsNullOrEmpty(genre.Name) && (Id == null || (j != OriginalGenres.Count)))
                             {
                                 <FluentButton OnClick="@(() => RemoveGenre(genre.Id))" IconStart="@(new Icons.Regular.Size16.Delete())"></FluentButton>
@@ -52,31 +54,31 @@ else
 
                 <FluentStack Orientation="Orientation.Vertical">
                     <FluentTextField Label="Director"
-                    Placeholder="Enter the movie director"
-                    Required="true"
-                    Size=30
-                    @bind-Value="Movie!.Director" />
+                                     Placeholder="Enter the movie director"
+                                     Required="true"
+                                     Size=30
+                                     @bind-Value="Movie!.Director" />
                     <FluentNumberField Label="Release year"
-                    Placeholder="Enter the movie release year"
-                    Required="true"
-                    Size=26
-                    @bind-Value="Movie!.ReleaseYear" />
+                                       Placeholder="Enter the movie release year"
+                                       Required="true"
+                                       Size=26
+                                       @bind-Value="Movie!.ReleaseYear" />
                     <FluentNumberField Label="Watched year"
-                    Placeholder="Enter the year you watched the movie"
-                    Required="true"
-                    Size=26
-                    @bind-Value="Movie!.WatchedYear" />
+                                       Placeholder="Enter the year you watched the movie"
+                                       Required="true"
+                                       Size=26
+                                       @bind-Value="Movie!.WatchedYear" />
                     <FluentTextField Label="Viewing format"
-                    Placeholder="Enter the movie viewing format"
-                    Required="true"
-                    Size=30
-                    @bind-Value="Movie!.ViewingForm" />
+                                     Placeholder="Enter the movie viewing format"
+                                     Required="true"
+                                     Size=30
+                                     @bind-Value="Movie!.ViewingForm" />
                     <FluentSelect Items=@reviewOptions
-                    OptionText="@(i => i.Text)"
-                    OptionValue="@(i => i.Value)"
-                    OptionSelected="@(i => i.Selected)"
-                    Label="Did you enjoy/like the movie?"
-                    @bind-Value="Movie!.Review" />
+                                  OptionText="@(i => i.Text)"
+                                  OptionValue="@(i => i.Value)"
+                                  OptionSelected="@(i => i.Selected)"
+                                  Label="Did you enjoy/like the movie?"
+                                  @bind-Value="Movie!.Review" />
 
                     <FluentStack Style="margin-top: 1em;">
                         <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Loading="@Loading">Submit</FluentButton>
@@ -172,14 +174,13 @@ else
             Movie.UserId = user.Id;
             await MovieService.AddMovie(Movie);
             Loading = false;
-            NavigationManager.NavigateTo("/films");
         }
         else
         {
             await MovieService.UpdateMovie(Id, Movie);
             Loading = false;
-            NavigationManager.NavigateTo("/films");
         }
+        NavigationManager.NavigateTo("/films");
     }
 
     public void ToMovies()

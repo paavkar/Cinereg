@@ -1,0 +1,97 @@
+﻿@page "/series"
+@page "/shows"
+
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+
+@inject UserAccessor UserAccessor
+@inject IDialogService DialogService
+@inject ISeriesService SeriesService
+@inject NavigationManager NavigationManager
+
+@attribute [StreamRendering(true)]
+@attribute [Authorize]
+
+<PageTitle>Series</PageTitle>
+
+<FluentLabel Typo="Typography.PageTitle">Series List</FluentLabel>
+
+<FluentDataGrid Id="seriesgrid" Pagination="@pagination" Items=@QueryableSeries GridTemplateColumns="15em 7em 10em 10em 15em 15em 15em 15em 7em"
+                ResizableColumns="true" Style="height: 45em; overflow-x: auto; margin-top: 1em;">
+    <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
+    <PropertyColumn Title="Seasons" Property="@(c => c!.Seasons.Count)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
+    <TemplateColumn Title="Genre" Sortable="true" Align=Align.Center>
+        @if (context.SeriesGenres.Count > 0)
+        {
+            foreach (Genre genre in context.SeriesGenres)
+            {
+                <FluentLabel>@genre.Name</FluentLabel>
+                <br />
+            }
+        }
+    </TemplateColumn>
+    <TemplateColumn Title="Actions" Align="@Align.End">
+        <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditSeries(context.Id!))" />
+        <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteSeries(context.Id!, context))" />
+    </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination" />
+
+@code {
+    private ApplicationUser user = default!;
+    private List<string> SeriesGenres { get; set; } = new();
+    public List<Series> Series { get; set; }
+    private IQueryable<Series> QueryableSeries { get; set; }
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+
+    string? activeid = "all";
+    FluentTab? changedto;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync();
+        Series = await SeriesService.GetAll(user.Id);
+        QueryableSeries = Series.AsQueryable();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Series != null)
+        {
+            foreach (var series in Series)
+            {
+                foreach (var genre in series.SeriesGenres)
+                {
+                    if (!SeriesGenres.Contains(genre.Name)) SeriesGenres.Add(genre.Name);
+                }
+            }
+        }
+    }
+
+    private void HandleOnTabChange(FluentTab tab)
+    {
+        changedto = tab;
+    }
+
+    private void EditSeries(string id)
+    {
+        NavigationManager.NavigateTo($"/edit-series/{id}");
+    }
+
+    private async Task DeleteSeries(string id, Series series)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync($"Do you want to delete the series {series.Name}?", "Yes", "No", "Delete series confirmation");
+
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await SeriesService.Delete(id);
+            NavigationManager.NavigateTo("/series");
+        }
+    }
+}

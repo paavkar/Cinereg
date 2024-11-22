@@ -1,0 +1,209 @@
+﻿@page "/edit-series"
+@page "/edit-series/{id}"
+@page "/edit-show"
+@page "/edit-show/{id}"
+@using Microsoft.AspNetCore.Authorization
+
+@rendermode InteractiveServer
+
+@inject IMovieService MovieService
+@inject IToastService ToastService
+@inject NavigationManager NavigationManager
+@inject UserAccessor UserAccessor
+@inject ISeriesService SeriesService
+
+@attribute [Authorize]
+
+<PageTitle>Edit series</PageTitle>
+
+@if (String.IsNullOrEmpty(Id))
+{
+    <FluentLabel Typo="Typography.H1">Add a new series</FluentLabel>
+}
+else
+{
+    <FluentLabel Typo="Typography.H1">Edit series @Show.Name</FluentLabel>
+}
+
+<EditForm Model="@Show" OnValidSubmit="Submit" FormName="editSeries">
+    <FluentGrid Style="margin-top: 1em;">
+        <FluentGridItem xs="8" md="6" lg="6">
+            <FluentStack Orientation="Orientation.Vertical">
+                <FluentTextField Label="Series title"
+                Placeholder="Write the series title"
+                Required
+                Size=30
+                @bind-Value="@Show.Name" />
+                <FluentTextField Label="How did you watch it?"
+                Placeholder="e.g. Streaming (Disney+)"
+                Required
+                Size=30
+                @bind-Value="@Show.ViewingForm" />
+
+                <FluentTextArea Label="Series review"
+                Placeholder="A review for series as a whole"
+                Required
+                Size=30
+                @bind-Value="@Show.Review" />
+
+                @if (Show.SeriesGenres.Count > 0)
+                {
+                    int j = 1;
+                    foreach (Genre genre in Show.SeriesGenres)
+                    {
+                        <FluentTextField Label=@("Genre " + (j))
+                        Placeholder="Enter the movie genre"
+                        Required="true"
+                        Size=30
+                        @bind-Value="@genre.Name" />
+                        if (Show.SeriesGenres.Count > 1 && String.IsNullOrEmpty(genre.Name) && (Id == null || (j != OriginalGenres.Count)))
+                        {
+                            <FluentButton OnClick="@(() => RemoveGenre(genre.Id))" IconStart="@(new Icons.Regular.Size16.Delete())"></FluentButton>
+                        }
+                        j++;
+                    }
+                    <FluentButton OnClick="AddGenre" Appearance="Appearance.Accent">Add Genre</FluentButton>
+                }
+            </FluentStack>
+        </FluentGridItem>
+
+        <FluentGridItem xs="8" md="6" lg="6">
+            <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 1em;">
+                <FluentButton Appearance="Appearance.Accent" OnClick="AddSeason">Add a season</FluentButton>
+
+                @if (Show.Seasons.Count > 0)
+                {
+                    int j = 0;
+                    foreach (Season season in Show.Seasons)
+                    {
+                        int SeasonNumber = j + Show.Seasons.Count - (Show.Seasons.Count - 1);
+                        season.SeasonNumber = SeasonNumber;
+
+                        <FluentAccordion>
+                            <FluentAccordionItem Heading="@("Season " + (SeasonNumber))">
+
+                                <FluentNumberField Label="Episode count"
+                                Placeholder="Give the season's episode count"
+                                Required
+                                Size=30
+                                @bind-Value="@season.NumberOfEpisodes" />
+
+                                <FluentNumberField Label="Season rating"
+                                Placeholder="9.9"
+                                Required
+                                Size=30
+                                @bind-Value="@season.Rating" />
+
+                                <FluentTextField Label="How did you watch it?"
+                                Placeholder="e.g. Streaming (Disney+)"
+                                Required
+                                Size=30
+                                @bind-Value="@season.ViewingForm" />
+
+                                <FluentTextArea Label="Season review"
+                                Placeholder="Give a review for the season"
+                                Required
+                                Resize="TextAreaResize.Vertical"
+                                @bind-Value="@season.Review" />
+
+                                <FluentNumberField Label="Release year"
+                                Placeholder="Enter the season release year"
+                                Required="true"
+                                Size=30
+                                @bind-Value="season.ReleaseYear" />
+
+                                <FluentNumberField Label="Watched year"
+                                Placeholder="Enter the year you watched the season"
+                                Required="true"
+                                Size=30
+                                @bind-Value="season.WatchedYear" />
+                            </FluentAccordionItem>
+                        </FluentAccordion>
+                        j++;
+                    }
+                }
+            </FluentStack>
+        </FluentGridItem>
+        <FluentStack Style="margin-top: 1em;">
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Submit</FluentButton>
+            <FluentButton Appearance="Appearance.Accent" OnClick="ToSeries">Back to Series list</FluentButton>
+        </FluentStack>
+    </FluentGrid>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private ApplicationUser user { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private Series Show { get; set; } = new();
+
+    private int SeasonCount { get; set; } = 1;
+    private List<Genre> OriginalGenres { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+            Show = await SeriesService.GetById(Id);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Id != null)
+            {
+                Series DbSeries = await SeriesService.GetById(Id);
+                if (DbSeries is not null)
+                {
+                    OriginalGenres = DbSeries.SeriesGenres;
+                }
+            }
+        }
+    }
+
+    public void AddGenre()
+    {
+        Show.SeriesGenres.Add(new() { Name = string.Empty });
+    }
+
+    public void RemoveGenre(string id)
+    {
+        Show.SeriesGenres.Remove(Show.SeriesGenres.Find(g => g.Id == id)!);
+    }
+
+    public void AddSeason()
+    {
+        SeasonCount++;
+        Show.Seasons.Add(new());
+    }
+
+    async Task Submit()
+    {
+        if (String.IsNullOrEmpty(Id))
+        {
+            Show.UserId = user.Id;
+            bool result = await SeriesService.Add(Show);
+            if (result) NavigationManager.NavigateTo("/series");
+        }
+        else
+        {
+            bool result = await SeriesService.Update(Id, Show);
+            if (result) NavigationManager.NavigateTo("/series");
+        }
+    }
+
+    public void ToSeries()
+    {
+        NavigationManager.NavigateTo("/series");
+    }
+}
