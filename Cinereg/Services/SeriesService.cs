@@ -3,7 +3,6 @@ using Cinereg.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Cinereg.Services
 {
@@ -60,6 +59,7 @@ namespace Cinereg.Services
                         }
 
                         transaction.Commit();
+                        return true;
                     }
                     catch (Exception ex)
                     {
@@ -68,7 +68,6 @@ namespace Cinereg.Services
                     }
                 }
             };
-            return false;
         }
 
         public async Task<List<string>> AddGenres(Series series)
@@ -87,7 +86,7 @@ namespace Cinereg.Services
                 if (existingGenre is null)
                 {
                     string genreId = genre.Id;
-                    if (genre.Id.IsNullOrEmpty()) genreId = Guid.CreateVersion7().ToString();
+                    if (String.IsNullOrEmpty(genre.Id)) genreId = Guid.CreateVersion7().ToString();
                     genreIds.Add(genreId);
                     string insertGenreCommand = @"INSERT INTO Genres (Id, Name) VALUES (@Id, @GenreName)";
                     await connection.ExecuteAsync(insertGenreCommand, new { Id = genreId, GenreName = genre.Name });
@@ -162,6 +161,7 @@ namespace Cinereg.Services
                         await connection.ExecuteAsync(sql, series, transaction);
 
                         List<string> genreIds = await AddGenres(series);
+
                         string deleteSql = @"
                                            DELETE FROM SeriesGenres
                                            WHERE GenreId NOT IN @GenreIds
@@ -259,12 +259,11 @@ namespace Cinereg.Services
                         seriesDictionary.Add(singleSeries!.Id!, singleSeries);
                     }
 
-                    if (!String.IsNullOrEmpty(genre.Name) && singleSeries.SeriesGenres.Find(g => g.Name == g.Name) is null)
-                    {
+                    if (!String.IsNullOrEmpty(genre.Name) && singleSeries.SeriesGenres.Find(g => g.Name == genre.Name) is null)
                         singleSeries.SeriesGenres.Add(genre);
-                    }
 
-                    singleSeries.Seasons.Add(season);
+                    if (singleSeries.Seasons.Find(s => s.Id == season.Id) is null)
+                        singleSeries.Seasons.Add(season);
 
                     return singleSeries;
                 },

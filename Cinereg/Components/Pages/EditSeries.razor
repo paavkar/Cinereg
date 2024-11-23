@@ -122,8 +122,9 @@ else
                         </FluentAccordion>
                         j++;
 
-                        if (Show.Seasons.Count > 1 && (Id == null || (j > OriginalSeasons.Count)))
+                        if (Show.Seasons.Count > 1 && (String.IsNullOrEmpty(Id) || (season.SeasonNumber > OriginalSeasons.Count)))
                         {
+                            Console.WriteLine($"original seasons: {OriginalSeasons.Count}, current season number: {season.SeasonNumber}");
                             <FluentButton Appearance="Appearance.Accent" OnClick="@(() => RemoveSeason(season.Id))" IconEnd="@(new Icons.Regular.Size16.Delete())" />
                         }
                     }
@@ -163,6 +164,7 @@ else
         {
             Show = await SeriesService.GetById(Id);
             OriginalSeriesTitle = Show.Name;
+            OriginalSeasons = Show.Seasons;
         }
     }
 
@@ -176,7 +178,6 @@ else
                 if (DbSeries is not null)
                 {
                     OriginalGenres = DbSeries.SeriesGenres;
-                    OriginalSeasons = DbSeries.Seasons;
                 }
             }
         }
@@ -201,6 +202,7 @@ else
     public void RemoveSeason(string id)
     {
         Show.Seasons.Remove(Show.Seasons.Find(s => s.Id == id)!);
+        NavigationManager.NavigateTo("/series");
     }
 
     async Task Submit()
