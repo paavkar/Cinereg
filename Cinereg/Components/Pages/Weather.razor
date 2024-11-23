@@ -9,12 +9,14 @@
 <FluentLabel Typo="Typography.H1" Alignment="HorizontalAlignment.Center">Weather</FluentLabel>
 <FluentLabel Typo="Typography.H2" Alignment="HorizontalAlignment.Center">@Message</FluentLabel>
 
-<FluentStack Orientation="Orientation.Vertical">
-    <FluentStack Style="margin-top: 1em;">
+<FluentGrid>
+    <FluentGridItem xs="12" md="4" lg="3">
         <FluentTextField Label="Location"
                          Placeholder="Search for a location"
                          Required
                          @bind-Value="location" />
+    </FluentGridItem>
+    <FluentGridItem xs="12" md="4" lg="3">
         <FluentSelect TOption="TimeZoneInfo"
                       Label="Select time zone"
                       Items="TimeZones"
@@ -22,10 +24,11 @@
                       Placeholder="Make a selection..."
                       OptionText="@(tz => tz.ToString())"
                       @bind-SelectedOption="@SelectedTimeZone" />
-    </FluentStack>
-    <FluentButton OnClick="RetrieveForecast" Appearance="Appearance.Accent">Search</FluentButton>
-</FluentStack>
-
+    </FluentGridItem>
+    <FluentGridItem xs="12" md="12" lg="12">
+        <FluentButton OnClick="RetrieveForecast" Appearance="Appearance.Accent">Search</FluentButton>
+    </FluentGridItem>
+</FluentGrid>
 @if (forecasts == null)
 {
 

@@ -48,7 +48,7 @@ namespace Cinereg.Services
                 if (existingGenre is null)
                 {
                     string genreId = genre.Id;
-                    if (genre.Id.IsNullOrEmpty()) genreId = Guid.NewGuid().ToString();
+                    if (genre.Id.IsNullOrEmpty()) genreId = Guid.CreateVersion7().ToString();
                     genreIds.Add(genreId);
                     string insertGenreCommand = @"INSERT INTO Genres (Id, Name) VALUES (@Id, @GenreName)";
                     await connection.ExecuteAsync(insertGenreCommand, new { Id = genreId, GenreName = genre.Name });
@@ -68,7 +68,7 @@ namespace Cinereg.Services
 
             List<string> genreIds = await AddGenres(movie);
 
-            movie.Id = Guid.NewGuid().ToString();
+            movie.Id = Guid.CreateVersion7().ToString();
 
             string insertMovieCommand = @"INSERT INTO Movies (Id, Name, ReleaseYear, Director, UserId, WatchedYear, ViewingForm, Review)
                                         VALUES (@Id, @Name, @ReleaseYear, @Director, @UserId, @WatchedYear, @ViewingForm, @Review)";

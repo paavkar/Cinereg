@@ -14,6 +14,7 @@
             <AuthorizeView>
                 <Authorized>
                     <FluentNavLink Href="films" Icon="@(new Icons.Regular.Size20.MoviesAndTv())" IconColor="Color.Accent">Films</FluentNavLink>
+                    <FluentNavLink Href="series" Icon="@(new Icons.Regular.Size20.MoviesAndTv())" IconColor="Color.Accent">Series</FluentNavLink>
                     <FluentNavLink Href="Account/Manage" Icon="@(new Icons.Regular.Size20.Person())">@context.User.Identity?.Name</FluentNavLink>
                     @* <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
