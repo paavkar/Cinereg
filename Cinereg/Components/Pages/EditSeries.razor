@@ -14,15 +14,16 @@
 
 @attribute [Authorize]
 
-<PageTitle>Edit series</PageTitle>
 
 @if (String.IsNullOrEmpty(Id))
 {
+    <PageTitle>Edit series</PageTitle>
     <FluentLabel Typo="Typography.H1">Add a new series</FluentLabel>
 }
 else
 {
-    <FluentLabel Typo="Typography.H1">Edit series @Show.Name</FluentLabel>
+    <PageTitle>Edit series - @OriginalSeriesTitle</PageTitle>
+    <FluentLabel Typo="Typography.H1">Edit series @OriginalSeriesTitle</FluentLabel>
 }
 
 <EditForm Model="@Show" OnValidSubmit="Submit" FormName="editSeries">
@@ -30,21 +31,21 @@ else
         <FluentGridItem xs="8" md="6" lg="6">
             <FluentStack Orientation="Orientation.Vertical">
                 <FluentTextField Label="Series title"
-                Placeholder="Write the series title"
-                Required
-                Size=30
-                @bind-Value="@Show.Name" />
+                                 Placeholder="Write the series title"
+                                 Required
+                                 Size=30
+                                 @bind-Value="@Show.Name" />
                 <FluentTextField Label="How did you watch it?"
-                Placeholder="e.g. Streaming (Disney+)"
-                Required
-                Size=30
-                @bind-Value="@Show.ViewingForm" />
+                                 Placeholder="e.g. Streaming (Disney+)"
+                                 Required
+                                 Size=30
+                                 @bind-Value="@Show.ViewingForm" />
 
                 <FluentTextArea Label="Series review"
-                Placeholder="A review for series as a whole"
-                Required
-                Size=30
-                @bind-Value="@Show.Review" />
+                                Placeholder="A review for series as a whole"
+                                Required
+                                Size=30
+                                @bind-Value="@Show.Review" />
 
                 @if (Show.SeriesGenres.Count > 0)
                 {
@@ -52,10 +53,10 @@ else
                     foreach (Genre genre in Show.SeriesGenres)
                     {
                         <FluentTextField Label=@("Genre " + (j))
-                        Placeholder="Enter the movie genre"
-                        Required="true"
-                        Size=30
-                        @bind-Value="@genre.Name" />
+                                         Placeholder="Enter the movie genre"
+                                         Required="true"
+                                         Size=30
+                                         @bind-Value="@genre.Name" />
                         if (Show.SeriesGenres.Count > 1 && String.IsNullOrEmpty(genre.Name) && (Id == null || (j != OriginalGenres.Count)))
                         {
                             <FluentButton OnClick="@(() => RemoveGenre(genre.Id))" IconStart="@(new Icons.Regular.Size16.Delete())"></FluentButton>
@@ -80,46 +81,51 @@ else
                         season.SeasonNumber = SeasonNumber;
 
                         <FluentAccordion>
-                            <FluentAccordionItem Heading="@("Season " + (SeasonNumber))">
+                            <FluentAccordionItem Heading="@("Season " + (SeasonNumber))" Expanded="@(SeasonNumber == 1)">
 
                                 <FluentNumberField Label="Episode count"
-                                Placeholder="Give the season's episode count"
-                                Required
-                                Size=30
-                                @bind-Value="@season.NumberOfEpisodes" />
+                                                   Placeholder="Give the season's episode count"
+                                                   Required
+                                                   Size=30
+                                                   @bind-Value="@season.NumberOfEpisodes" />
 
                                 <FluentNumberField Label="Season rating"
-                                Placeholder="9.9"
-                                Required
-                                Size=30
-                                @bind-Value="@season.Rating" />
+                                                   Placeholder="9.9"
+                                                   Required
+                                                   Size=30
+                                                   @bind-Value="@season.Rating" />
 
                                 <FluentTextField Label="How did you watch it?"
-                                Placeholder="e.g. Streaming (Disney+)"
-                                Required
-                                Size=30
-                                @bind-Value="@season.ViewingForm" />
+                                                 Placeholder="e.g. Streaming (Disney+)"
+                                                 Required
+                                                 Size=30
+                                                 @bind-Value="@season.ViewingForm" />
 
                                 <FluentTextArea Label="Season review"
-                                Placeholder="Give a review for the season"
-                                Required
-                                Resize="TextAreaResize.Vertical"
-                                @bind-Value="@season.Review" />
+                                                Placeholder="Give a review for the season"
+                                                Required
+                                                Resize="TextAreaResize.Vertical"
+                                                @bind-Value="@season.Review" />
 
                                 <FluentNumberField Label="Release year"
-                                Placeholder="Enter the season release year"
-                                Required="true"
-                                Size=30
-                                @bind-Value="season.ReleaseYear" />
+                                                   Placeholder="Enter the season release year"
+                                                   Required="true"
+                                                   Size=30
+                                                   @bind-Value="season.ReleaseYear" />
 
                                 <FluentNumberField Label="Watched year"
-                                Placeholder="Enter the year you watched the season"
-                                Required="true"
-                                Size=30
-                                @bind-Value="season.WatchedYear" />
+                                                   Placeholder="Enter the year you watched the season"
+                                                   Required="true"
+                                                   Size=30
+                                                   @bind-Value="season.WatchedYear" />
                             </FluentAccordionItem>
                         </FluentAccordion>
                         j++;
+
+                        if (Show.Seasons.Count > 1 && (Id == null || (j > OriginalSeasons.Count)))
+                        {
+                            <FluentButton Appearance="Appearance.Accent" OnClick="@(() => RemoveSeason(season.Id))" IconEnd="@(new Icons.Regular.Size16.Delete())" />
+                        }
                     }
                 }
             </FluentStack>
@@ -142,6 +148,9 @@ else
 
     private int SeasonCount { get; set; } = 1;
     private List<Genre> OriginalGenres { get; set; } = new();
+    private List<Season> OriginalSeasons { get; set; } = new();
+
+    private string OriginalSeriesTitle { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -153,6 +162,7 @@ else
         if (Id != null)
         {
             Show = await SeriesService.GetById(Id);
+            OriginalSeriesTitle = Show.Name;
         }
     }
 
@@ -166,6 +176,7 @@ else
                 if (DbSeries is not null)
                 {
                     OriginalGenres = DbSeries.SeriesGenres;
+                    OriginalSeasons = DbSeries.Seasons;
                 }
             }
         }
@@ -185,6 +196,11 @@ else
     {
         SeasonCount++;
         Show.Seasons.Add(new());
+    }
+
+    public void RemoveSeason(string id)
+    {
+        Show.Seasons.Remove(Show.Seasons.Find(s => s.Id == id)!);
     }
 
     async Task Submit()

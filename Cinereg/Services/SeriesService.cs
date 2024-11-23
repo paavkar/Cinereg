@@ -51,13 +51,12 @@ namespace Cinereg.Services
 
                         foreach (Season season in series.Seasons)
                         {
-                            season.Id = Guid.CreateVersion7().ToString();
                             season.ShowId = series.Id;
 
-                            string insertSeasonsCommand = @"INSERT INTO Seasons (Id, ShowId, SeasonNumber, NumberOfEpisodes, Rating, Review, ReleaseYear, WatchedYear, ViewingForm)
+                            string insertSeasonCommand = @"INSERT INTO Seasons (Id, ShowId, SeasonNumber, NumberOfEpisodes, Rating, Review, ReleaseYear, WatchedYear, ViewingForm)
                                         VALUES (@Id, @ShowId, @SeasonNumber, @NumberOfEpisodes, @Rating, @Review, @ReleaseYear, @WatchedYear, @ViewingForm)";
 
-                            await connection.ExecuteAsync(insertSeasonsCommand, season, transaction);
+                            await connection.ExecuteAsync(insertSeasonCommand, season, transaction);
                         }
 
                         transaction.Commit();
@@ -129,7 +128,95 @@ namespace Cinereg.Services
 
         public async Task<bool> Update(string id, Series series)
         {
-            throw new NotImplementedException();
+            var dbSeries = await GetById(id);
+            if (dbSeries == null) return false;
+
+            List<Season> newSeasons = new();
+            List<Season> oldSeasons = new();
+
+            foreach (Season season in series.Seasons)
+            {
+                if (dbSeries.Seasons.Find(s => s.Id == season.Id) is null)
+                {
+                    newSeasons.Add(season);
+                }
+                else oldSeasons.Add(season);
+            }
+
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        string sql = @"
+                                     UPDATE Series
+                                     SET Name = @Name,
+                                         ReleaseYear = @ReleaseYear,
+                                         WatchedYear = @WatchedYear,
+                                         ViewingForm = @ViewingForm,
+                                         Review = @Review
+                                     WHERE Id = @Id";
+                        await connection.ExecuteAsync(sql, series, transaction);
+
+                        List<string> genreIds = await AddGenres(series);
+                        string deleteSql = @"
+                                           DELETE FROM SeriesGenres
+                                           WHERE GenreId NOT IN @GenreIds
+                                           AND SeriesId = @SeriesId";
+                        await connection.ExecuteAsync(deleteSql, new { GenreIds = genreIds, SeriesId = id }, transaction);
+
+                        string addSeriesGenresSql = @"
+                                                    INSERT INTO SeriesGenres (GenreId, SeriesId) 
+                                                    SELECT @GenreId, @SeriesId
+                                                    WHERE NOT EXISTS (SELECT 1
+                                                                      FROM SeriesGenres
+                                                                      WHERE SeriesId = @SeriesId
+                                                                      AND GenreId = @GenreId)";
+
+                        foreach (var genreId in genreIds)
+                        {
+                            await connection.ExecuteAsync(addSeriesGenresSql, new { GenreId = genreId, SeriesId = id }, transaction);
+                        }
+
+                        foreach (Season season in oldSeasons)
+                        {
+                            string updateSeasonCommand = @"
+                                                         UPDATE Seasons
+                                                         SET SeasonNumber = @SeasonNumber,
+                                                             NumberOfEpisodes = @NumberOfEpisodes,
+                                                             Rating = @Rating,
+                                                             Review = @Review,
+                                                             ReleaseYear = @ReleaseYear,
+                                                             WatchedYear = @WatchedYear,
+                                                             ViewingForm = @ViewingForm
+                                                         WHERE Id = @Id";
+
+                            await connection.ExecuteAsync(updateSeasonCommand, season, transaction);
+                        }
+
+                        foreach (Season season in newSeasons)
+                        {
+                            season.ShowId = id;
+
+                            string insertSeasonCommand = @"INSERT INTO Seasons (Id, ShowId, SeasonNumber, NumberOfEpisodes, Rating, Review, ReleaseYear, WatchedYear, ViewingForm)
+                                        VALUES (@Id, @ShowId, @SeasonNumber, @NumberOfEpisodes, @Rating, @Review, @ReleaseYear, @WatchedYear, @ViewingForm)";
+
+                            await connection.ExecuteAsync(insertSeasonCommand, season, transaction);
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return false;
+                    }
+                }
+            }
         }
 
         private string GetSeriesSql(bool singleSeries = false)
