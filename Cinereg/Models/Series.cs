@@ -9,10 +9,10 @@ namespace Cinereg.Models
         [Required]
         public string Name { get; set; }
         [Required]
-        public int ReleaseYear { get; set; } = DateTime.Now.Year;
+        public int StartYear { get; set; } = DateTime.Now.Year;
         public string? UserId { get; set; }
         [Required]
-        public int WatchedYear { get; set; } = DateTime.Now.Year;
+        public int EndYear { get; set; } = DateTime.Now.Year;
         public string ViewingForm { get; set; }
         [Required]
         public string Review { get; set; }

@@ -202,7 +202,6 @@ else
     public void RemoveSeason(string id)
     {
         Show.Seasons.Remove(Show.Seasons.Find(s => s.Id == id)!);
-        NavigationManager.NavigateTo("/series");
     }
 
     async Task Submit()

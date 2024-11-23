@@ -21,8 +21,8 @@
                 ResizableColumns="true" Style="height: 45em; overflow-x: auto; margin-top: 1em;">
     <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
     <PropertyColumn Title="Seasons" Property="@(c => c!.Seasons.Count)" Sortable="true" Align=Align.Center />
-    <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
-    <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="Start year" Property="@(c => c!.StartYear)" Sortable="true" Align=Align.Center />
+    <PropertyColumn Title="End year" Property="@(c => c!.EndYear)" Sortable="true" Align=Align.Center />
     <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
     <TemplateColumn Title="Genre" Sortable="true" Align=Align.Center>
         @if (context.SeriesGenres.Count > 0)

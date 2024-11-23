@@ -26,7 +26,11 @@ namespace Cinereg.Services
         {
             List<string> genreIds = await AddGenres(series);
 
+            series.Seasons.OrderBy(se => se.ReleaseYear).ToList();
+
             series.Id = Guid.CreateVersion7().ToString();
+            series.StartYear = series.Seasons.First().ReleaseYear;
+            series.EndYear = series.Seasons.Last().ReleaseYear;
 
             using (var connection = GetConnection())
             {
@@ -36,8 +40,8 @@ namespace Cinereg.Services
                 {
                     try
                     {
-                        string insertSeriesCommand = @"INSERT INTO Series (Id, Name, ReleaseYear, WatchedYear, ViewingForm, Review, UserId)
-                                        VALUES (@Id, @Name, @ReleaseYear, @WatchedYear, @ViewingForm, @Review, @UserId)";
+                        string insertSeriesCommand = @"INSERT INTO Series (Id, Name, StartYear, EndYear, ViewingForm, Review, UserId)
+                                        VALUES (@Id, @Name, @StartYear, @EndYear, @ViewingForm, @Review, @UserId)";
 
                         await connection.ExecuteAsync(insertSeriesCommand, series, transaction);
 
@@ -142,6 +146,8 @@ namespace Cinereg.Services
                 else oldSeasons.Add(season);
             }
 
+            series.EndYear = series.Seasons.Last().ReleaseYear;
+
             using (var connection = GetConnection())
             {
                 connection.Open();
@@ -153,8 +159,8 @@ namespace Cinereg.Services
                         string sql = @"
                                      UPDATE Series
                                      SET Name = @Name,
-                                         ReleaseYear = @ReleaseYear,
-                                         WatchedYear = @WatchedYear,
+                                         StartYear = @StartYear,
+                                         EndYear = @EndYear,
                                          ViewingForm = @ViewingForm,
                                          Review = @Review
                                      WHERE Id = @Id";
@@ -251,8 +257,8 @@ namespace Cinereg.Services
                             UserId = series.UserId,
                             ViewingForm = series.ViewingForm,
                             Review = series.Review,
-                            ReleaseYear = series.ReleaseYear,
-                            WatchedYear = series.WatchedYear,
+                            StartYear = series.StartYear,
+                            EndYear = series.EndYear,
                             SeriesGenres = new(),
                             Seasons = new(),
                         };
@@ -264,6 +270,8 @@ namespace Cinereg.Services
 
                     if (singleSeries.Seasons.Find(s => s.Id == season.Id) is null)
                         singleSeries.Seasons.Add(season);
+
+                    singleSeries.Seasons.OrderBy(se => se.ReleaseYear).ToList();
 
                     return singleSeries;
                 },
