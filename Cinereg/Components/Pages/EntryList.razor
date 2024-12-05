@@ -46,7 +46,7 @@ else
 
 @code {
     private ApplicationUser user = default!;
-    private List<MovieWithGenres> movies;
+    private List<Movie> movies;
     private List<string> MovieGenres { get; set; } = new();
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;

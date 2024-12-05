@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Components.Tooltip;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -84,6 +85,7 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 builder.Services.AddScoped<IOpenAIService, OpenAIService>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
+builder.Services.AddScoped<ITooltipService, TooltipService>();
 
 var app = builder.Build();
 

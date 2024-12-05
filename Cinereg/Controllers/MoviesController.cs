@@ -22,7 +22,7 @@ namespace Cinereg.Controllers
 
         // GET: api/Movies
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<MovieWithGenres>>> GetMovies()
+        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
         {
             var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
@@ -36,7 +36,7 @@ namespace Cinereg.Controllers
 
         // GET: api/Movies/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<MovieWithGenres>> GetMovie(string id)
+        public async Task<ActionResult<Movie>> GetMovie(string id)
         {
             var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
@@ -62,7 +62,7 @@ namespace Cinereg.Controllers
         // PUT: api/Movies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<ActionResult> PutMovie(string id, [FromBody] MovieWithGenres movie)
+        public async Task<ActionResult> PutMovie(string id, [FromBody] Movie movie)
         {
             var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)
@@ -88,7 +88,7 @@ namespace Cinereg.Controllers
         // POST: api/Movies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MovieWithGenres>> PostMovie([FromBody] MovieWithGenres movie)
+        public async Task<ActionResult<Movie>> PostMovie([FromBody] Movie movie)
         {
             var authenticationResult = await HttpContext.AuthenticateAsync("Identity.Bearer");
             if (!authenticationResult.Succeeded)

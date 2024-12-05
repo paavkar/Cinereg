@@ -124,7 +124,6 @@ else
 
                         if (Show.Seasons.Count > 1 && (String.IsNullOrEmpty(Id) || (season.SeasonNumber > OriginalSeasons.Count)))
                         {
-                            Console.WriteLine($"original seasons: {OriginalSeasons.Count}, current season number: {season.SeasonNumber}");
                             <FluentButton Appearance="Appearance.Accent" OnClick="@(() => RemoveSeason(season.Id))" IconEnd="@(new Icons.Regular.Size16.Delete())" />
                         }
                     }

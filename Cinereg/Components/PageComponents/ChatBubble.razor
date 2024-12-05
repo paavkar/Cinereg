@@ -1,4 +1,4 @@
-﻿@implements IDialogContentComponent<List<MovieWithGenres>>
+﻿@implements IDialogContentComponent<List<Movie>>
 @using OpenAI.Chat
 @inject IOpenAIService AI
 
@@ -49,7 +49,7 @@
 
 @code {
     [Parameter]
-    public List<MovieWithGenres> Content { get; set; } = default!;
+    public List<Movie> Content { get; set; } = default!;
 
     [CascadingParameter]
     public FluentDialog Dialog { get; set; } = default!;

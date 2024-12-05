@@ -53,11 +53,21 @@ else
                 </FluentStack>
 
                 <FluentStack Orientation="Orientation.Vertical">
-                    <FluentTextField Label="Director"
-                                     Placeholder="Enter the movie director"
-                                     Required="true"
-                                     Size=30
-                                     @bind-Value="Movie!.Director" />
+                    @if (Movie.Directors.Count > 0)
+                    {
+                        int j = 1;
+                        foreach (var director in Movie.Directors)
+                        {
+                            <FluentTextField Label="Director"
+                                             Placeholder="Enter a movie director"
+                                             Required="true"
+                                             Size=30
+                                             ReadOnly="@((!IsEditable && j <= OriginalDirectors.Count))"
+                                             @bind-Value="@director.Name" />
+                            j++;
+                        }
+                    }
+                    <FluentButton OnClick="AddDirector" Appearance="Appearance.Accent">Add Director</FluentButton>
                     <FluentNumberField Label="Release year"
                                        Placeholder="Enter the movie release year"
                                        Required="true"
@@ -105,9 +115,12 @@ else
     private ApplicationUser user { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private MovieWithGenres Movie { get; set; } = new();
+    private Movie Movie { get; set; } = new();
+
+    private bool IsEditable = true;
 
     private List<Genre> OriginalGenres { get; set; } = new();
+    private List<Director> OriginalDirectors { get; set; } = new();
 
     protected override void OnInitialized() => Movie ??= new();
 
@@ -118,9 +131,10 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
+        IsEditable = Id == null;
         if (Id != null)
         {
-            MovieWithGenres DbMovie = await MovieService.GetMovieById(Id);
+            Movie DbMovie = await MovieService.GetMovieById(Id);
             if (DbMovie is not null)
             {
                 Movie = DbMovie;
@@ -146,10 +160,12 @@ else
         {
             if (Id != null)
             {
-                MovieWithGenres DbMovie = await MovieService.GetMovieById(Id);
+                Movie DbMovie = await MovieService.GetMovieById(Id);
                 if (DbMovie is not null)
                 {
                     OriginalGenres = DbMovie.MovieGenres;
+                    OriginalDirectors = DbMovie.Directors;
+                    StateHasChanged();
                 }
 
             }
@@ -159,6 +175,11 @@ else
     public void AddGenre()
     {
         Movie.MovieGenres.Add(new() { Name = string.Empty });
+    }
+
+    public void AddDirector()
+    {
+        Movie.Directors.Add(new());
     }
 
     public void RemoveGenre(string id)
