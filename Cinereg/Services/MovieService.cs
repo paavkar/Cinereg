@@ -23,7 +23,7 @@ namespace Cinereg.Services
             return new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         }
 
-        public async Task<List<MovieWithGenres>> GetAllMovies(string userId)
+        public async Task<List<Movie>> GetAllMovies(string userId)
         {
             //var movies = await _context.Movies.Where(m => m.UserId == userId).ToListAsync();
             var sql = GetMovieSql();
@@ -32,7 +32,7 @@ namespace Cinereg.Services
             return moviesDapper.Distinct().ToList();
         }
 
-        public async Task<List<string>> AddGenres(MovieWithGenres movie)
+        public async Task<List<string>> AddGenres(Movie movie)
         {
             using var connection = GetConnection();
             string sql = @"SELECT * FROM Genres WHERE Name = @GenreName";
@@ -59,7 +59,33 @@ namespace Cinereg.Services
             return genreIds;
         }
 
-        public async Task<MovieWithGenres> AddMovie(MovieWithGenres movie)
+        public async Task<List<string>> AddDirectors(Movie movie)
+        {
+            using var connection = GetConnection();
+            string sql = @"SELECT * FROM Directors WHERE Name = @DirectorName";
+
+            List<string> directorIds = new();
+
+            foreach (Director director in movie.Directors)
+            {
+                director.Name = director.Name.Trim();
+                var existingDirector = await connection.QueryFirstOrDefaultAsync<Director>(sql, new { DirectorName = director.Name });
+
+                if (existingDirector is null)
+                {
+                    string directorId = director.Id;
+                    if (director.Id.IsNullOrEmpty()) directorId = Guid.CreateVersion7().ToString();
+                    directorIds.Add(directorId);
+                    string insertGenreCommand = @"INSERT INTO Directors (Id, Name) VALUES (@Id, @DirectorName)";
+                    await connection.ExecuteAsync(insertGenreCommand, new { Id = directorId, DirectorName = director.Name });
+                }
+                else directorIds.Add(existingDirector.Id);
+            }
+
+            return directorIds;
+        }
+
+        public async Task<Movie> AddMovie(Movie movie)
         {
             //_context.Movies.Add(movie);
             //await _context.SaveChangesAsync();
@@ -67,11 +93,12 @@ namespace Cinereg.Services
             using var connection = GetConnection();
 
             List<string> genreIds = await AddGenres(movie);
+            List<string> directorIds = await AddDirectors(movie);
 
             movie.Id = Guid.CreateVersion7().ToString();
 
-            string insertMovieCommand = @"INSERT INTO Movies (Id, Name, ReleaseYear, Director, UserId, WatchedYear, ViewingForm, Review)
-                                        VALUES (@Id, @Name, @ReleaseYear, @Director, @UserId, @WatchedYear, @ViewingForm, @Review)";
+            string insertMovieCommand = @"INSERT INTO Movies (Id, Name, ReleaseYear, UserId, WatchedYear, ViewingForm, Review)
+                                        VALUES (@Id, @Name, @ReleaseYear, @UserId, @WatchedYear, @ViewingForm, @Review)";
 
             await connection.ExecuteAsync(insertMovieCommand, movie);
 
@@ -81,22 +108,28 @@ namespace Cinereg.Services
                 await connection.ExecuteAsync(insertGenreCommand, new { GenreId = genreId, MovieId = movie.Id });
             }
 
+            foreach (string directorId in directorIds)
+            {
+                string insertGenreCommand = @"INSERT INTO MovieDirectors (DirectorId, MovieId) VALUES (@DirectorId, @MovieId)";
+                await connection.ExecuteAsync(insertGenreCommand, new { DirectorId = directorId, MovieId = movie.Id });
+            }
+
             return movie;
         }
 
         public async Task<bool> DeleteMovie(string id)
         {
-            var dbMovie = await _context.Movies.FindAsync(id);
-            if (dbMovie != null)
-            {
-                _context.Remove(dbMovie);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            var sql = @"
+                    DELETE FROM Movies
+                    WHERE Id = @Id";
+
+            using var connection = GetConnection();
+            int rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
+
+            return rowsAffected > 0;
         }
 
-        public async Task<MovieWithGenres> GetMovieById(string id)
+        public async Task<Movie> GetMovieById(string id)
         {
             var sql = GetMovieSql(true);
 
@@ -105,7 +138,7 @@ namespace Cinereg.Services
             //return await _context.Movies.FindAsync(id);
         }
 
-        public async Task<MovieWithGenres> UpdateMovie(string id, MovieWithGenres movie)
+        public async Task<Movie> UpdateMovie(string id, Movie movie)
         {
             //var dbMovie = await _context.Movies.FindAsync(id);
             //if (dbMovie != null)
@@ -126,12 +159,14 @@ namespace Cinereg.Services
             if (dbMovie == null) return null;
             string sql = @"
                         UPDATE Movies
-                        SET Name = @Name, ReleaseYear = @ReleaseYear, Director = @Director, WatchedYear = @WatchedYear, ViewingForm = @ViewingForm, Review = @Review
+                        SET Name = @Name, ReleaseYear = @ReleaseYear, WatchedYear = @WatchedYear, ViewingForm = @ViewingForm, Review = @Review
                         WHERE Id = @Id";
             using var connection = GetConnection();
             await connection.ExecuteAsync(sql, movie);
 
             List<string> genreIds = await AddGenres(movie);
+            List<string> directorIds = await AddDirectors(movie);
+
             string deleteSql = @"
                              DELETE FROM MovieGenres
                              WHERE GenreId NOT IN @GenreIds
@@ -151,16 +186,31 @@ namespace Cinereg.Services
                 await connection.ExecuteAsync(addMovieGenresSql, new { GenreId = genreId, MovieId = id });
             }
 
+            string addMovieDirectorsSql = @"
+                                    INSERT INTO MovieDirectors (DirectorId, MovieId) 
+                                    SELECT @DirectorId, @MovieId
+                                    WHERE NOT EXISTS (SELECT 1
+                                                      FROM MovieDirectors
+                                                      WHERE MovieId = @MovieId
+                                                      AND DirectorId = @DirectorId)";
+
+            foreach (var directorId in directorIds)
+            {
+                await connection.ExecuteAsync(addMovieDirectorsSql, new { DirectorId = directorId, MovieId = id });
+            }
+
             return dbMovie!;
         }
 
         private string GetMovieSql(bool singleMovie = false)
         {
             var sql = @"
-                    SELECT m.*, g.Id AS GenreId, g.Name
+                    SELECT m.*, g.Id AS GenreId, g.*, d.Id AS DirectorId, d.*
                     FROM Movies m
                     LEFT JOIN MovieGenres mg ON m.Id = mg.MovieId
-                    LEFT JOIN Genres g ON mg.GenreId = g.Id";
+                    LEFT JOIN Genres g ON mg.GenreId = g.Id
+                    LEFT JOIN MovieDirectors md ON m.Id = md.MovieId
+                    LEFT JOIN Directors d ON md.DirectorId = d.Id";
 
             if (singleMovie) sql += " WHERE m.Id = @Id";
             else sql += " WHERE m.UserId = @UserId ORDER BY m.Name";
@@ -168,39 +218,44 @@ namespace Cinereg.Services
             return sql;
         }
 
-        private async Task<IEnumerable<MovieWithGenres>> QueryMoviesAsync(string sql, object parameters)
+        private async Task<IEnumerable<Movie>> QueryMoviesAsync(string sql, object parameters)
         {
-            var movieDictionary = new Dictionary<string, MovieWithGenres>();
+            var movieDictionary = new Dictionary<string, Movie>();
             using var connection = GetConnection();
-            var movies = await connection.QueryAsync<Movie, Genre, MovieWithGenres>(
+
+            var movies = await connection.QueryAsync<Movie, Genre, Director, Movie>(
                 sql,
-                (movie, genre) =>
+                (movie, genre, director) =>
                 {
-                    if (!movieDictionary.TryGetValue(movie.Id!, out var movieWithGenres))
+                    if (!movieDictionary.TryGetValue(movie.Id!, out var dbMovie))
                     {
-                        movieWithGenres = new MovieWithGenres
+                        dbMovie = new Movie
                         {
                             Id = movie.Id,
                             Name = movie.Name,
                             ReleaseYear = movie.ReleaseYear,
-                            Director = movie.Director,
                             UserId = movie.UserId,
                             WatchedYear = movie.WatchedYear,
                             ViewingForm = movie.ViewingForm,
                             Review = movie.Review,
-                            MovieGenres = new()
+                            MovieGenres = new(),
+                            Directors = new()
                         };
-                        movieDictionary.Add(movieWithGenres!.Id!, movieWithGenres);
+                        movieDictionary.Add(dbMovie!.Id!, dbMovie);
                     }
 
-                    if (genre.Name != null)
+                    if (!genre.Name.IsNullOrEmpty() && dbMovie.MovieGenres.Find(g => g.Name == genre.Name) is null)
                     {
-                        movieWithGenres.MovieGenres.Add(genre);
+                        dbMovie.MovieGenres.Add(genre);
                     }
-                    return movieWithGenres;
+                    if (!director.Name.IsNullOrEmpty() && dbMovie.Directors.Find(d => d.Name == director.Name) is null)
+                    {
+                        dbMovie.Directors.Add(director);
+                    }
+                    return dbMovie;
                 },
                 parameters,
-                splitOn: "GenreId");
+                splitOn: "GenreId,DirectorId");
 
             return movies;
         }

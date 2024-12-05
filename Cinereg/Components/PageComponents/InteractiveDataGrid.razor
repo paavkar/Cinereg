@@ -1,22 +1,42 @@
 ﻿@rendermode InteractiveServer
 
 <FluentDataGrid Id="moviegrid" Pagination="@pagination" Items=@iMovies GridTemplateColumns="15em 10em 10em 15em 15em 15em 15em 7em" 
-                ResizableColumns="true" Style="height: 45em; overflow-x: auto; margin-top: 1em;">
+ResizableColumns="true" Style="height: 45em; overflow-x: auto; margin-top: 1em;">
     <PropertyColumn Title="Title" Property="@(c => c!.Name)" Sortable="true" Align=Align.Start />
     <PropertyColumn Title="Release year" Property="@(c => c!.ReleaseYear)" Sortable="true" Align=Align.Center />
     <PropertyColumn Title="Watched year" Property="@(c => c!.WatchedYear)" Sortable="true" Align=Align.Center />
     <PropertyColumn Title="Viewing format" Property="@(c => c!.ViewingForm)" Sortable="true" Align=Align.Center />
-    <TemplateColumn Title="Genre" Sortable="true" Align=Align.Center>
+    <TemplateColumn Title="Genres" Align=Align.Center>
         @if (context.MovieGenres.Count > 0)
         {
+            int j = 1;
             foreach (Genre genre in context.MovieGenres)
             {
-                <FluentLabel>@genre.Name</FluentLabel>
-                <br />
+                if (j <= 3)
+                {
+                    <FluentLabel>@genre.Name</FluentLabel>
+                }
+                j++;
+            }
+            if (j > 3)
+            {
+                <FluentIcon Id="moreGenres" Icon="Icons.Regular.Size24.Info" />
+
+                <FluentTooltip Anchor="moreGenres">
+                    This film has more genres than 3.
+                </FluentTooltip>
             }
         }
     </TemplateColumn>
-    <PropertyColumn Title="Director" Property="@(c => c!.Director)" Sortable="true" Align=Align.Center />
+    <TemplateColumn Title="Directors" Align=Align.Center>
+        @if (context.Directors.Count > 0)
+        {
+            foreach (Director director in context.Directors)
+            {
+                <FluentLabel>@director.Name</FluentLabel>
+            }
+        }
+    </TemplateColumn>
     <PropertyColumn Title="Did I enjoy/like it?" Property="@(c => c!.Review)" Sortable="true" Align=Align.Center />
     <TemplateColumn Title="Actions" Align="@Align.End">
         <EditMovieButton Id=@context.Id />
@@ -27,8 +47,8 @@
 
 @code {
     [Parameter]
-    public List<MovieWithGenres> movies { get; set; }
-    private IQueryable<MovieWithGenres>? iMovies;
+    public List<Movie> movies { get; set; }
+    private IQueryable<Movie>? iMovies;
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     protected override void OnInitialized() => iMovies = movies.AsQueryable();
