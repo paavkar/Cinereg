@@ -20,8 +20,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddHubOptions(options =>
     {
-        options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
-        options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+        options.MaximumReceiveMessageSize = 1024000;
     })
     .AddInteractiveWebAssemblyComponents();
 
