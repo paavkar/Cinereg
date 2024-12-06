@@ -20,7 +20,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddHubOptions(options =>
     {
-        options.MaximumReceiveMessageSize = 1024000;
+        options.MaximumReceiveMessageSize = 1024;
     })
     .AddInteractiveWebAssemblyComponents();
 
