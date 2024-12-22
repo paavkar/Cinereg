@@ -69,6 +69,7 @@ namespace Cinereg.Services
             foreach (Director director in movie.Directors)
             {
                 director.Name = director.Name.Trim();
+                if (director.Name.IsNullOrEmpty()) continue;
                 var existingDirector = await connection.QueryFirstOrDefaultAsync<Director>(sql, new { DirectorName = director.Name });
 
                 if (existingDirector is null)

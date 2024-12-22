@@ -11,8 +11,6 @@
     </FluentStack>
 </FluentDialogHeader> *@
 
-
-
 @* Body *@
 <FluentDialogBody>
     <FluentStack Orientation="Orientation.Vertical">
@@ -69,14 +67,17 @@
                 UserMoviesList.Add(movie.Name);
                 foreach (var genre in movie.MovieGenres)
                 {
-                    if (GenresList.Find(g => g == genre.Name) is null)
+                    if (!GenresList.Any(g => g == genre.Name))
                     {
                         GenresList.Add(genre.Name);
                     }
                 }
-                if (DirectorsList.Find(d => d == movie.Director) is null)
+                foreach (var director in movie.Directors)
                 {
-                    DirectorsList.Add(movie.Director);
+                    if (!DirectorsList.Any(d => d == director.Name))
+                    {
+                        DirectorsList.Add(director.Name);
+                    }
                 }
             }
             string movies = String.Join(", ", UserMoviesList);
